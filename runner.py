@@ -59,28 +59,25 @@ def main():
 
 
     # Show instructions initially
-    # instructions = True
-    instructions = False
+    instructions = True
+    # instructions = False
 
-    # Counter of moves
+    # Counter of turns
     turn = 0
 
     pawn_active = False
-    pawns_locations = {"1": (),
-                       "2": (),
-                       "3": (),
-                       "4": ()}
+    highlight_pawn = False
 
     while True:
 
-        # Check if game quit
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         sys.exit()
 
+        events = pygame.event.get()
         screen.fill(COLOR_BACKGROUND)
 
-        #Show game instructions
+        # Show game instructions
         if instructions:
 
             # Title
@@ -144,7 +141,8 @@ def main():
                         pawn_size, pawn_size)
                     pygame.draw.rect(screen, COLOR_PLAYERS[str(player)], rect)
 
-                    pawns_locations[str(player)] = (i, j)
+                    # pawns_locations[str(player)] = (i, j)
+                    game.pawns_locations[str(player)] = (i, j)
 
                 row.append(rect)
             cells.append(row)
@@ -162,34 +160,77 @@ def main():
 
         player = game.player(turn)
 
-        if left == 1:
-            mouse = pygame.mouse.get_pos()
-            for i in range(HEIGHT):
-                for j in range(WIDTH):
+        # if left == 1:
+        #     mouse = pygame.mouse.get_pos()
+        #     for i in range(HEIGHT):
+        #         for j in range(WIDTH):
+        #
+        #             # Highlight selected pawn if it is player's pawn
+        #             if cells[i][j].collidepoint(mouse) and game.board[i][j]["player"] == player:
+        #                 if pawn_active:
+        #                     pawn_active = False
+        #                     highlight_pawn = False
+        #                 else:
+        #                     highlight_pawn = True
+        #                     pawn_active = True
+        #                 # rect = pygame.Rect(
+        #                 #     board_origin[0] + j * cell_size + pawn_size / 2,
+        #                 #     board_origin[1] + i * cell_size + pawn_size / 2,
+        #                 #     pawn_size, pawn_size)
+        #                 # pygame.draw.rect(screen, COLOR_PLAYERS[str(player) + "a"], rect)
+        #
+        #             elif cells[i][j].collidepoint(mouse) and pawn_active:
+        #                 game.board[i][j]["player"] = player
+        #                 game.board[pawns_locations[str(player)][0]][pawns_locations[str(player)][1]]["player"] = 0
+        #                 pawns_locations[str(player)] = (i, j)
+        #                 pawn_active = False
+        #                 highlight_pawn = False
 
-                    # Highlight selected pawn if it is player's pawn
-                    if cells[i][j].collidepoint(mouse) and game.board[i][j]["player"] == player:
-                        highlight_pawn = True
-                        pawn_active = True
-                        rect = pygame.Rect(
-                            board_origin[0] + j * cell_size + pawn_size / 2,
-                            board_origin[1] + i * cell_size + pawn_size / 2,
-                            pawn_size, pawn_size)
-                        pygame.draw.rect(screen, COLOR_PLAYERS[str(player) + "a"], rect)
+        # Instruction doesn't work if events are not before instruction code - wtf?
+        # events = pygame.event.get()
+        for event in events:
+            # print(event)
 
-                    elif cells[i][j].collidepoint(mouse) and pawn_active:
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    print("event.pos: ", event.pos)
+                    i = int((event.pos[1] - board_origin[1]) // cell_size)
+                    j = int((event.pos[0] - board_origin[0]) // cell_size)
+                    print(j, i)
+                    if game.board[i][j]["player"] == player:
+                        if pawn_active:
+                            pawn_active = False
+                            highlight_pawn = False
+                        else:
+                            highlight_pawn = True
+                            pawn_active = True
+                    # if game.board[i][j]["player"] == 0 and pawn_active:
+                    print("available_moves: ", game.available_moves(player))
+                    if (i, j) in game.available_moves(player) and pawn_active:
                         game.board[i][j]["player"] = player
-                        game.board[pawns_locations[str(player)][0]][pawns_locations[str(player)][1]]["player"] = 0
-                        pawns_locations[str(player)] = (i, j)
+                        game.board[game.pawns_locations[str(player)][0]][game.pawns_locations[str(player)][1]]["player"] = 0
+                        game.pawns_locations[str(player)] = (i, j)
                         pawn_active = False
+                        highlight_pawn = False
+                        turn += 1
 
-        # if highlight_pawn:
+            # if event.type == pygame.MOUSEBUTTONUP:
 
 
-        # screen.blit(cells, board_origin)
+
+        if highlight_pawn:
+            rect = pygame.Rect(
+                board_origin[0] + game.pawns_locations[str(player)][1] * cell_size + pawn_size / 2,
+                board_origin[1] + game.pawns_locations[str(player)][0] * cell_size + pawn_size / 2,
+                pawn_size, pawn_size)
+            pygame.draw.rect(screen, COLOR_PLAYERS[str(player) + "a"], rect)
+
+
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(30)
 
 
 # def draw_pawn():

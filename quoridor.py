@@ -6,13 +6,13 @@ class Quoridor:
     Game representation.
     """
 
-    def __init__(self, height=9, width=9, walls=10, players=2):
+    def __init__(self, height=9, width=9, walls=10, players_number=2):
 
         # Set initial size and number of walls
         self.height = height
         self.width = width
         self.walls = walls
-        self.players = players
+        self.players_number = players_number
 
         # Initialize an empty board
         self.board = []
@@ -28,12 +28,20 @@ class Quoridor:
                 )
             self.board.append(row)
 
-        # Set players on start positions
+        # Initialize players' pawns (i, j) = (y, x)
+        self.pawns_locations = {"1": (0, self.width // 2),
+                                "2": (self.height - 1, self.width // 2)}
+
+        # Set pawn on start positions
         self.board[0][self.width//2]["player"] = 1
         self.board[-1][self.width//2]["player"] = 2
-        if players == 4:
-            self.board[self.height // 2][0]["player"] = 3
-            self.board[self.height // 2][-1]["player"] = 4
+
+        # # Double pawns if this game for 4 players
+        # if players_number == 4:
+        #     self.pawns_locations["3"] = (self.height // 2, 0)
+        #     self.pawns_locations["4"] = (self.height // 2, self.width - 1)
+        #     self.board[self.height // 2][0]["player"] = 3
+        #     self.board[self.height // 2][-1]["player"] = 4
 
     def player(self, turn):
         """Returns player who has the next turn on a board."""
@@ -58,5 +66,40 @@ class Quoridor:
                 if self.board[i][win_side]["player"] == player:
                     return True
 
+    def available_moves(self, player):
+        """Return list with cells where pawn can move."""
+        available_moves = []
+        print("locations: ", self.pawns_locations)
+        pawn_i = self.pawns_locations[str(player)][0]
+        pawn_j = self.pawns_locations[str(player)][1]
+
+        main_moves = [(pawn_i - 1, pawn_j),
+                      (pawn_i + 1, pawn_j),
+                      (pawn_i, pawn_j - 1),
+                      (pawn_i, pawn_j + 1)]
+
+        for move in main_moves:
+            i, j = move
+            if 0 <= i < self.height and 0 <= j < self.width:
+                if self.board[i][j]["player"] == 0:
+                    # there will be walls' conditions
+
+                    available_moves.append((i, j))
+
+                # Add double moves
+                # elif walls-condition-1:
+                else:
+                    i += (i - pawn_i)
+                    j += (j - pawn_j)
+                    if 0 <= i < self.height and 0 <= j < self.width:
+                        if self.board[i][j]["player"] == 0:
+                            # there will be walls' conditions
+
+                            available_moves.append((i, j))
+
+                # Add side double moves
+                # elif walls-condition-2:
+
+        return available_moves
 
 
