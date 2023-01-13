@@ -54,9 +54,9 @@ class Quoridor:
         """Check if the player reached the other side of the board."""
         # Define for player a win side of the board
         if player == 1 or player == 3:
-            win_side = [-1]  # down for player 1, right for player 3
+            win_side = -1  # down for player 1, right for player 3
         else:
-            win_side = [0]  # up for player 2, left for player 4
+            win_side = 0  # up for player 2, left for player 4
 
         # Check if player is on the other side of the board
         if player == 1 or player == 2:
