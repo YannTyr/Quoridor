@@ -55,7 +55,7 @@ def main():
     cell_size = int(min(board_width / WIDTH, board_height / HEIGHT))
     # board_origin = (BOARD_PADDING, BOARD_PADDING)
     board_origin = ((width / 2 - board_width / 2), (height / 2 - board_height / 2))
-    pawn_size = cell_size / 2
+    pawn_size = cell_size / 2.1
 
     # Create game and AI agent
     game = Quoridor(height=HEIGHT, width=WIDTH, walls=WALLS)
@@ -100,8 +100,8 @@ def main():
                     cell_size, cell_size
                 )
                 pygame.draw.rect(screen, COLOR_SQUARES, rect)
-                pygame.draw.rect(screen, COLOR_BORDERS, rect, int(cell_size/6))
-                pygame.draw.rect(screen, COLOR_BACKGROUND, rect, int(cell_size/8))
+                pygame.draw.rect(screen, COLOR_BORDERS, rect, int(cell_size/5))
+                pygame.draw.rect(screen, COLOR_BACKGROUND, rect, int(cell_size/6))
 
                 # Draw players' pawns on a board
                 player = game.board[i][j]["player"]
@@ -109,8 +109,8 @@ def main():
                     # Do not draw the active pawn, because it will be drawn later as active pawn (optional)
                     if not pawn_active or player != active_player:
                         rect = pygame.Rect(
-                            board_origin[0] + j * cell_size + pawn_size / 2,
-                            board_origin[1] + i * cell_size + pawn_size / 2,
+                            board_origin[0] + j * cell_size + (cell_size - pawn_size) / 2,
+                            board_origin[1] + i * cell_size + (cell_size - pawn_size) / 2,
                             pawn_size, pawn_size)
                         pygame.draw.rect(screen, COLOR_PLAYERS[str(player)], rect)
 
@@ -120,8 +120,8 @@ def main():
                 # Show where player can move
                 if pawn_active and (i, j) in game.available_moves(active_player):
                     rect = pygame.Rect(
-                        board_origin[0] + j * cell_size + pawn_size * 0.75,
-                        board_origin[1] + i * cell_size + pawn_size * 0.75,
+                        board_origin[0] + j * cell_size + (cell_size - pawn_size / 2) / 2,
+                        board_origin[1] + i * cell_size + (cell_size - pawn_size / 2) / 2,
                         pawn_size / 2, pawn_size / 2)
                     pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player)], rect)
 
@@ -207,8 +207,8 @@ def main():
         # Draw activated pawn
         if highlight_pawn:
             rect = pygame.Rect(
-                board_origin[0] + game.pawns_locations[str(active_player)][1] * cell_size + pawn_size / 2,
-                board_origin[1] + game.pawns_locations[str(active_player)][0] * cell_size + pawn_size / 2,
+                board_origin[0] + game.pawns_locations[str(active_player)][1] * cell_size + (cell_size - pawn_size) / 2,
+                board_origin[1] + game.pawns_locations[str(active_player)][0] * cell_size + (cell_size - pawn_size) / 2,
                 pawn_size, pawn_size)
             pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player) + "a"], rect, int(pawn_size//4))
 
