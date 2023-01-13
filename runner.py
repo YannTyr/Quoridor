@@ -36,6 +36,8 @@ def main():
     # Create game
     pygame.init()
     size = width, height = 1200, 700
+    # size = width, height = 1920, 1080
+    # size = width, height = 1366, 768
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
 
@@ -170,28 +172,34 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     print("event.pos: ", event.pos)
-                    # Get a coordinates (i, j) of the clicked cell
-                    i = int((event.pos[1] - board_origin[1]) // cell_size)
-                    j = int((event.pos[0] - board_origin[0]) // cell_size)
-                    print(j, i)
 
-                    # Activate pawn
-                    if game.board[i][j]["player"] == active_player:
-                        if pawn_active:
+                    # Check if the click was on the board
+                    up, down = board_origin[1], board_origin[1] + board_height - 9  # -9px because of rounding
+                    left, right = board_origin[0], board_origin[0] + board_width - 9
+                    if up < event.pos[1] < down and left < event.pos[0] < right:
+
+                        # Get a coordinates (i, j) of the clicked cell
+                        i = int((event.pos[1] - board_origin[1]) / cell_size)
+                        j = int((event.pos[0] - board_origin[0]) / cell_size)
+                        print(j, i)
+
+                        # Activate pawn
+                        if game.board[i][j]["player"] == active_player:
+                            if pawn_active:
+                                pawn_active = False
+                                highlight_pawn = False
+                            else:
+                                highlight_pawn = True
+                                pawn_active = True
+
+                        # Make a move
+                        if (i, j) in game.available_moves(active_player) and pawn_active:
+                            game.board[i][j]["player"] = active_player
+                            game.board[game.pawns_locations[str(active_player)][0]][game.pawns_locations[str(active_player)][1]]["player"] = 0
+                            game.pawns_locations[str(active_player)] = (i, j)
                             pawn_active = False
                             highlight_pawn = False
-                        else:
-                            highlight_pawn = True
-                            pawn_active = True
-
-                    # Make a move
-                    if (i, j) in game.available_moves(active_player) and pawn_active:
-                        game.board[i][j]["player"] = active_player
-                        game.board[game.pawns_locations[str(active_player)][0]][game.pawns_locations[str(active_player)][1]]["player"] = 0
-                        game.pawns_locations[str(active_player)] = (i, j)
-                        pawn_active = False
-                        highlight_pawn = False
-                        turn += 1
+                            turn += 1
 
             # if event.type == pygame.MOUSEBUTTONUP:
 
