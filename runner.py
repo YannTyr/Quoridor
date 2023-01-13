@@ -30,6 +30,11 @@ COLOR_PLAYERS = {
     "2a": (255, 90, 90)
 }
 
+players_names = {
+    1: "Theseus",
+    2: "Minotaur"
+}
+
 
 def main():
 
@@ -70,6 +75,7 @@ def main():
 
     pawn_active = False
     highlight_pawn = False
+    game_is_active = True
 
     while True:
 
@@ -86,7 +92,8 @@ def main():
             instructions = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font)
             continue  # Continue the loop
 
-        active_player = game.player(turn)
+        if game_is_active:
+            active_player = game.player(turn)
 
         # Draw the board
         cells = []
@@ -136,33 +143,6 @@ def main():
 
         move = None
 
-        # Check for a right/left click
-        # left, _, right = pygame.mouse.get_pressed()
-        # if left == 1:
-        #     mouse = pygame.mouse.get_pos()
-        #     for i in range(HEIGHT):
-        #         for j in range(WIDTH):
-        #
-        #             # Highlight selected pawn if it is player's pawn
-        #             if cells[i][j].collidepoint(mouse) and game.board[i][j]["player"] == player:
-        #                 if pawn_active:
-        #                     pawn_active = False
-        #                     highlight_pawn = False
-        #                 else:
-        #                     highlight_pawn = True
-        #                     pawn_active = True
-        #                 # rect = pygame.Rect(
-        #                 #     board_origin[0] + j * cell_size + pawn_size / 2,
-        #                 #     board_origin[1] + i * cell_size + pawn_size / 2,
-        #                 #     pawn_size, pawn_size)
-        #                 # pygame.draw.rect(screen, COLOR_PLAYERS[str(player) + "a"], rect)
-        #
-        #             elif cells[i][j].collidepoint(mouse) and pawn_active:
-        #                 game.board[i][j]["player"] = player
-        #                 game.board[pawns_locations[str(player)][0]][pawns_locations[str(player)][1]]["player"] = 0
-        #                 pawns_locations[str(player)] = (i, j)
-        #                 pawn_active = False
-        #                 highlight_pawn = False
 
         for event in events:
             # print(event)
@@ -195,7 +175,8 @@ def main():
                         # Make a move
                         if (i, j) in game.available_moves(active_player) and pawn_active:
                             game.board[i][j]["player"] = active_player
-                            game.board[game.pawns_locations[str(active_player)][0]][game.pawns_locations[str(active_player)][1]]["player"] = 0
+                            player = str(active_player)
+                            game.board[game.pawns_locations[player][0]][game.pawns_locations[player][1]]["player"] = 0
                             game.pawns_locations[str(active_player)] = (i, j)
                             pawn_active = False
                             highlight_pawn = False
@@ -212,7 +193,33 @@ def main():
                 pawn_size, pawn_size)
             pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player) + "a"], rect, int(pawn_size//4))
 
+        if game_is_active:
+            # Text with an active player's name
+            player_name = players_names[active_player]
+            t_your_move = subtitle_font.render(f"Your move, ", True, COLOR_TEXT)
+            t_your_move_rect = t_your_move.get_rect()
+            t_your_move_rect.midright = (board_origin[0], height / 12)
+            screen.blit(t_your_move, t_your_move_rect)
 
+            t_active_player = subtitle_font.render(player_name, True, COLOR_PLAYERS[str(active_player)])
+            t_active_player_rect = t_active_player.get_rect()
+            t_active_player_rect.midleft = (t_your_move_rect.right, height / 12)
+            screen.blit(t_active_player, t_active_player_rect)
+
+        if game.won(active_player):
+            # Text with the winner's name
+            player_name = players_names[active_player]
+            t_you_won = subtitle_font.render(f"You won, ", True, COLOR_TEXT)
+            t_you_won_rect = t_you_won.get_rect()
+            t_you_won_rect.midright = (board_origin[0], height / 12)
+            screen.blit(t_you_won, t_you_won_rect)
+
+            t_active_player = subtitle_font.render(player_name, True, COLOR_PLAYERS[str(active_player)])
+            t_active_player_rect = t_active_player.get_rect()
+            t_active_player_rect.midleft = (t_you_won_rect.right, height / 12)
+            screen.blit(t_active_player, t_active_player_rect)
+
+            game_is_active = False
 
         pygame.display.flip()
         clock.tick(30)
