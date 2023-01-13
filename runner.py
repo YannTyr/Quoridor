@@ -25,10 +25,11 @@ COLOR_WALLS = (250, 250, 250)
 COLOR_TEXT = (250, 250, 250)
 COLOR_PLAYERS = {
     "1": (230, 220, 130),
-    "1a": (250, 240, 190),
+    "1a": (250, 250, 160),
     "2": (200, 75, 75),
     "2a": (255, 90, 90)
 }
+
 
 def main():
 
@@ -56,7 +57,7 @@ def main():
 
     # Create game and AI agent
     game = Quoridor(height=HEIGHT, width=WIDTH, walls=WALLS)
-
+    # ai =
 
     # Show instructions initially
     instructions = True
@@ -70,54 +71,22 @@ def main():
 
     while True:
 
-        # for event in pygame.event.get():
-        #     if event.type == pygame.QUIT:
-        #         sys.exit()
-
         events = pygame.event.get()
         screen.fill(COLOR_BACKGROUND)
 
         # Show game instructions
         if instructions:
+            # Check if game quit
+            for event in events:
+                if event.type == pygame.QUIT:
+                    sys.exit()
+            # Show instruction
+            instructions = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font)
+            continue  # Continue the loop
 
-            # Title
-            title = title_font.render("Quoridor", True, COLOR_TEXT)
-            title_rect = title.get_rect()
-            title_rect.center = ((width / 2), (height / 10))
-            screen.blit(title, title_rect)
+        active_player = game.player(turn)
 
-            # Rules
-            rules = [
-                "",
-                ""
-            ]
-            for i, rule in enumerate(rules):
-                line = instruction_font.render(rule, True, COLOR_TEXT)
-                line_rect = line.get_rect()
-                line_rect.center = ((width / 2), 150 + 30 * i)
-                screen.blit(line, line_rect)
-
-            # Play game button
-            #                         left,            top,              width,     height
-            button_rect = pygame.Rect((3 / 8) * width, (3 / 4) * height, width / 4, 60)
-            button_text = subtitle_font.render("Play", True, COLOR_TEXT)
-            button_text_rect = button_text.get_rect()
-            button_text_rect.center = button_rect.center
-            pygame.draw.rect(screen, COLOR_SQUARES, button_rect)
-            screen.blit(button_text, button_text_rect)
-
-            # Check if play button clicked
-            click, _, _ = pygame.mouse.get_pressed()
-            if click == 1:
-                mouse = pygame.mouse.get_pos()
-                if button_rect.collidepoint(mouse):
-                    instructions = False
-                    time.sleep(0.3)
-
-            pygame.display.flip()
-            continue
-
-        # Draw board
+        # Draw the board
         cells = []
         for i in range(HEIGHT):
             row = []
@@ -135,14 +104,24 @@ def main():
                 # Draw players' pawns on a board
                 player = game.board[i][j]["player"]
                 if player != 0:
-                    rect = pygame.Rect(
-                        board_origin[0] + j * cell_size + pawn_size / 2,
-                        board_origin[1] + i * cell_size + pawn_size / 2,
-                        pawn_size, pawn_size)
-                    pygame.draw.rect(screen, COLOR_PLAYERS[str(player)], rect)
+                    # Do not draw the active pawn, because it will be drawn later as active pawn (optional)
+                    if not pawn_active or player != active_player:
+                        rect = pygame.Rect(
+                            board_origin[0] + j * cell_size + pawn_size / 2,
+                            board_origin[1] + i * cell_size + pawn_size / 2,
+                            pawn_size, pawn_size)
+                        pygame.draw.rect(screen, COLOR_PLAYERS[str(player)], rect)
 
                     # pawns_locations[str(player)] = (i, j)
                     game.pawns_locations[str(player)] = (i, j)
+
+                # Show where player can move
+                if pawn_active and (i, j) in game.available_moves(active_player):
+                    rect = pygame.Rect(
+                        board_origin[0] + j * cell_size + pawn_size * 0.75,
+                        board_origin[1] + i * cell_size + pawn_size * 0.75,
+                        pawn_size / 2, pawn_size / 2)
+                    pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player)], rect)
 
                 row.append(rect)
             cells.append(row)
@@ -156,10 +135,7 @@ def main():
         move = None
 
         # Check for a right/left click
-        left, _, right = pygame.mouse.get_pressed()
-
-        player = game.player(turn)
-
+        # left, _, right = pygame.mouse.get_pressed()
         # if left == 1:
         #     mouse = pygame.mouse.get_pos()
         #     for i in range(HEIGHT):
@@ -186,8 +162,6 @@ def main():
         #                 pawn_active = False
         #                 highlight_pawn = False
 
-        # Instruction doesn't work if events are not before instruction code - wtf?
-        # events = pygame.event.get()
         for event in events:
             # print(event)
 
@@ -196,22 +170,25 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     print("event.pos: ", event.pos)
+                    # Get a coordinates (i, j) of the clicked cell
                     i = int((event.pos[1] - board_origin[1]) // cell_size)
                     j = int((event.pos[0] - board_origin[0]) // cell_size)
                     print(j, i)
-                    if game.board[i][j]["player"] == player:
+
+                    # Activate pawn
+                    if game.board[i][j]["player"] == active_player:
                         if pawn_active:
                             pawn_active = False
                             highlight_pawn = False
                         else:
                             highlight_pawn = True
                             pawn_active = True
-                    # if game.board[i][j]["player"] == 0 and pawn_active:
-                    print("available_moves: ", game.available_moves(player))
-                    if (i, j) in game.available_moves(player) and pawn_active:
-                        game.board[i][j]["player"] = player
-                        game.board[game.pawns_locations[str(player)][0]][game.pawns_locations[str(player)][1]]["player"] = 0
-                        game.pawns_locations[str(player)] = (i, j)
+
+                    # Make a move
+                    if (i, j) in game.available_moves(active_player) and pawn_active:
+                        game.board[i][j]["player"] = active_player
+                        game.board[game.pawns_locations[str(active_player)][0]][game.pawns_locations[str(active_player)][1]]["player"] = 0
+                        game.pawns_locations[str(active_player)] = (i, j)
                         pawn_active = False
                         highlight_pawn = False
                         turn += 1
@@ -219,13 +196,13 @@ def main():
             # if event.type == pygame.MOUSEBUTTONUP:
 
 
-
+        # Draw activated pawn
         if highlight_pawn:
             rect = pygame.Rect(
-                board_origin[0] + game.pawns_locations[str(player)][1] * cell_size + pawn_size / 2,
-                board_origin[1] + game.pawns_locations[str(player)][0] * cell_size + pawn_size / 2,
+                board_origin[0] + game.pawns_locations[str(active_player)][1] * cell_size + pawn_size / 2,
+                board_origin[1] + game.pawns_locations[str(active_player)][0] * cell_size + pawn_size / 2,
                 pawn_size, pawn_size)
-            pygame.draw.rect(screen, COLOR_PLAYERS[str(player) + "a"], rect)
+            pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player) + "a"], rect, int(pawn_size//4))
 
 
 
@@ -235,6 +212,51 @@ def main():
 
 # def draw_pawn():
 
+def draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font):
+
+    # Check if game quit
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
+
+    # Title
+    title = title_font.render("Quoridor", True, COLOR_TEXT)
+    title_rect = title.get_rect()
+    title_rect.center = ((width / 2), (height / 10))
+    screen.blit(title, title_rect)
+
+    # Rules
+    rules = [
+        "Go to other side of the board!",
+        "Make moves with your pawn and place walls.",
+        "You can jump over other pawns but not over walls."
+    ]
+    for i, rule in enumerate(rules):
+        line = instruction_font.render(rule, True, COLOR_TEXT)
+        line_rect = line.get_rect()
+        line_rect.center = ((width / 2), 200 + 35 * i)
+        screen.blit(line, line_rect)
+
+    # Play game button
+    #                         left,            top,              width,     height
+    button_rect = pygame.Rect((3 / 8) * width, (3 / 4) * height, width / 4, 60)
+    button_text = subtitle_font.render("Play", True, COLOR_TEXT)
+    button_text_rect = button_text.get_rect()
+    button_text_rect.center = button_rect.center
+    pygame.draw.rect(screen, COLOR_SQUARES, button_rect)
+    screen.blit(button_text, button_text_rect)
+
+    # Check if play button clicked
+    click, _, _ = pygame.mouse.get_pressed()
+    if click == 1:
+        mouse = pygame.mouse.get_pos()
+        if button_rect.collidepoint(mouse):
+            time.sleep(0.3)
+            return False
+
+    pygame.display.flip()
+    clock.tick(30)
+    return True
 
 
 if __name__ == '__main__':

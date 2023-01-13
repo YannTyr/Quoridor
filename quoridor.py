@@ -52,12 +52,14 @@ class Quoridor:
 
     def won(self, player):
         """Check if the player reached the other side of the board."""
-        if player in [1, 3]:
+        # Define for player a win side of the board
+        if player == 1 or player == 3:
             win_side = [-1]  # down for player 1, right for player 3
         else:
             win_side = [0]  # up for player 2, left for player 4
 
-        if player in [1, 2]:
+        # Check if player is on the other side of the board
+        if player == 1 or player == 2:
             for j in range(self.width):
                 if self.board[win_side][j]["player"] == player:
                     return True
@@ -65,11 +67,13 @@ class Quoridor:
             for i in range(self.height):
                 if self.board[i][win_side]["player"] == player:
                     return True
+        return False
 
     def available_moves(self, player):
         """Return list with cells where pawn can move."""
         available_moves = []
-        print("locations: ", self.pawns_locations)
+        print("pawns_locations: ", self.pawns_locations)
+        print("player: ", player)
         pawn_i = self.pawns_locations[str(player)][0]
         pawn_j = self.pawns_locations[str(player)][1]
 
@@ -99,7 +103,7 @@ class Quoridor:
 
                 # Add side double moves
                 # elif walls-condition-2:
-
+        print("available_moves: ", available_moves)
         return available_moves
 
 
