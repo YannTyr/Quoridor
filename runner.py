@@ -7,7 +7,8 @@ from quoridor import Quoridor
 # Game settings
 HEIGHT = 9
 WIDTH = 9
-WALLS = 10
+PLAYERS_NUMBER = 2
+WALLS_NUMBER = 10
 
 # Colors
 BLACK = (0, 0, 0)
@@ -21,7 +22,8 @@ RED = (180, 60, 60)
 COLOR_BACKGROUND = (13, 2, 2)
 COLOR_SQUARES = (16, 16, 16)
 COLOR_BORDERS = (50, 50, 50)
-COLOR_WALLS = (250, 250, 250)
+COLOR_WALLS = (200, 200, 200)
+COLOR_WALLS_A = (240, 240, 240)
 COLOR_TEXT = (250, 250, 250)
 COLOR_PLAYERS = {
     "1": (230, 220, 130),
@@ -34,6 +36,14 @@ players_names = {
     1: "Theseus",
     2: "Minotaur"
 }
+
+walls = {
+    player: [
+        [False, None, None] for _ in range(WALLS_NUMBER)
+    ]
+    for player in range(1, PLAYERS_NUMBER + 1)
+}
+print(walls)
 
 
 def main():
@@ -63,7 +73,7 @@ def main():
     pawn_size = cell_size / 2.1
 
     # Create game and AI agent
-    game = Quoridor(height=HEIGHT, width=WIDTH, walls=WALLS)
+    game = Quoridor(height=HEIGHT, width=WIDTH, walls=WALLS_NUMBER)
     # ai =
 
     # Show instructions initially
@@ -100,7 +110,7 @@ def main():
         for i in range(HEIGHT):
             row = []
             for j in range(WIDTH):
-                # Draw rectangle for cell
+                # Draw rectangle for a cell
                 rect = pygame.Rect(
                     board_origin[0] + j * cell_size,
                     board_origin[1] + i * cell_size,
@@ -113,7 +123,7 @@ def main():
                 # Draw players' pawns on a board
                 player = game.board[i][j]["player"]
                 if player != 0:
-                    # Do not draw the active pawn, because it will be drawn later as active pawn (optional)
+                    # Do not draw the active pawn, because it will be drawn later as an active pawn (optional)
                     if not pawn_active or player != active_player:
                         rect = pygame.Rect(
                             board_origin[0] + j * cell_size + (cell_size - pawn_size) / 2,
@@ -134,6 +144,13 @@ def main():
 
                 row.append(rect)
             cells.append(row)
+
+        rect = pygame.Rect(
+            board_origin[0] + 7 * cell_size + cell_size * 5/6 + 2,
+            board_origin[1] + 5 * cell_size + cell_size * 1/6,
+            cell_size * 2/6 - 2, cell_size * 10/6
+        )
+        pygame.draw.rect(screen, COLOR_WALLS, rect)
 
         # AI Move button?
         pass
@@ -206,6 +223,7 @@ def main():
             t_active_player_rect.midleft = (t_your_move_rect.right, height / 12)
             screen.blit(t_active_player, t_active_player_rect)
 
+        # Stop the game and show the winner if there is one
         if game.won(active_player):
             # Text with the winner's name
             player_name = players_names[active_player]
