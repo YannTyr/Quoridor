@@ -33,8 +33,8 @@ class Quoridor:
                                 "2": (self.height - 1, self.width // 2)}
 
         # Set pawn on start positions
-        self.board[0][self.width//2]["player"] = 1
-        self.board[-1][self.width//2]["player"] = 2
+        self.board[-1][self.width//2]["player"] = 1
+        self.board[0][self.width//2]["player"] = 2
 
         # # Double pawns if this game for 4 players
         # if players_number == 4:
@@ -53,10 +53,10 @@ class Quoridor:
     def won(self, player):
         """Check if the player reached the other side of the board."""
         # Define for player a win side of the board
-        if player == 1 or player == 3:
-            win_side = -1  # down for player 1, right for player 3
+        if player == 1 or player == 4:
+            win_side = 0  # up for player 1, left for player 4
         else:
-            win_side = 0  # up for player 2, left for player 4
+            win_side = -1  # down for player 2, right for player 3
 
         # Check if player is on the other side of the board
         if player == 1 or player == 2:
