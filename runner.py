@@ -77,6 +77,14 @@ def main():
 
     pawn_size = cell_size / 2.1
 
+    wall_width = cell_size * 2/6 - 2
+    wall_height = cell_size * 10/6
+
+    storage_width = board_width / 4 + 10
+    storage_height = board_height / 2
+    storage_origin_1 = (board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8)
+    storage_origin_2 = (board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/8)
+
     # Create game and AI agent
     game = Quoridor(height=HEIGHT, width=WIDTH, walls=WALLS_NUMBER)
     # ai =
@@ -151,17 +159,15 @@ def main():
 
         
         # Draw places for unused walls
-        storage_width = board_width / 4 + 10
-        storage_height = board_height / 2
         storage_rect_1 = pygame.Rect(
-            board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8,
+            storage_origin_1[0], storage_origin_1[1],
             storage_width, storage_height
         )
         pygame.draw.rect(screen, COLOR_SQUARES, storage_rect_1)
         pygame.draw.rect(screen, COLOR_BORDERS, storage_rect_1, int(cell_size * 0.05))
 
         storage_rect_2 = pygame.Rect(
-            board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/8,
+            storage_origin_2[0], storage_origin_2[1],
             storage_width, storage_height
         )
         pygame.draw.rect(screen, COLOR_SQUARES, storage_rect_2)
@@ -169,10 +175,7 @@ def main():
 
         # Draw walls
         for player in range(1, PLAYERS_NUMBER + 1):
-            for wall in walls[player]:
-                # Location and size of a wall
-                wall_width = cell_size * 2/6 - 2
-                wall_height = cell_size * 10/6
+            for wall in walls[player] if wall["placed"]:
 
                 # Draw a wall if it is on the board
                 if wall["placed"]:
