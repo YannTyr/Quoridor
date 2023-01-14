@@ -39,10 +39,14 @@ players_names = {
 
 walls = {
     player: [
-        [False, None, None] for _ in range(WALLS_NUMBER)
+        # [None, None, False] for _ in range(WALLS_NUMBER)
+        {"loc": (None, None),
+        "orientation": "horizontal",
+        "placed": False}
     ]
     for player in range(1, PLAYERS_NUMBER + 1)
 }
+walls[1][0] = {"loc": (0, 7), "orientation": "horizontal", "placed": True}
 print(walls)
 
 
@@ -64,12 +68,13 @@ def main():
 
     # Compute board size
     BOARD_PADDING = 20
-    # board_width = ((3 / 4) * width) - (BOARD_PADDING * 2)
-    board_height = ((3 / 4) * height) - (BOARD_PADDING * 2)
+    board_height_abt = ((3 / 4) * height) - (BOARD_PADDING * 2)
+    board_width_abt = board_height_abt
+    cell_size = int(min(board_width_abt / WIDTH, board_height_abt / HEIGHT))
+    board_height = cell_size * HEIGHT
     board_width = board_height
-    cell_size = int(min(board_width / WIDTH, board_height / HEIGHT))
-    # board_origin = (BOARD_PADDING, BOARD_PADDING)
     board_origin = ((width / 2 - board_width / 2), (height / 2 - board_height / 2))
+
     pawn_size = cell_size / 2.1
 
     # Create game and AI agent
@@ -131,7 +136,6 @@ def main():
                             pawn_size, pawn_size)
                         pygame.draw.rect(screen, COLOR_PLAYERS[str(player)], rect)
 
-                    # pawns_locations[str(player)] = (i, j)
                     game.pawns_locations[str(player)] = (i, j)
 
                 # Show where player can move
@@ -141,16 +145,58 @@ def main():
                         board_origin[1] + i * cell_size + (cell_size - pawn_size / 2) / 2,
                         pawn_size / 2, pawn_size / 2)
                     pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player)], rect)
-
+                
                 row.append(rect)
             cells.append(row)
 
-        rect = pygame.Rect(
-            board_origin[0] + 7 * cell_size + cell_size * 5/6 + 2,
-            board_origin[1] + 5 * cell_size + cell_size * 1/6,
-            cell_size * 2/6 - 2, cell_size * 10/6
+        
+        # Draw places for unused walls
+        storage_width = board_width / 4 + 10
+        storage_height = board_height / 2
+        storage_rect_1 = pygame.Rect(
+            board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8,
+            storage_width, storage_height
         )
-        pygame.draw.rect(screen, COLOR_WALLS, rect)
+        pygame.draw.rect(screen, COLOR_SQUARES, storage_rect_1)
+        pygame.draw.rect(screen, COLOR_BORDERS, storage_rect_1, int(cell_size * 0.05))
+
+        storage_rect_2 = pygame.Rect(
+            board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/8,
+            storage_width, storage_height
+        )
+        pygame.draw.rect(screen, COLOR_SQUARES, storage_rect_2)
+        pygame.draw.rect(screen, COLOR_BORDERS, storage_rect_2, int(cell_size * 0.05))
+
+        # Draw walls
+        for player in range(1, PLAYERS_NUMBER + 1):
+            for wall in walls[player]:
+                # Location and size of a wall
+                wall_width = cell_size * 2/6 - 2
+                wall_height = cell_size * 10/6
+
+                # Draw a wall if it is on the board
+                if wall["placed"]:
+                    x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1
+                    y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 1/6
+                    if wall["orientation"] == "vertical":
+                        x, y = y, x
+                        wall_width, wall_height = wall_height, wall_width
+                    rect = pygame.Rect(x, y, wall_width, wall_height)
+                    pygame.draw.rect(screen, COLOR_WALLS, rect)
+
+                # Draw a wall if it is unused
+                else:
+                    if player == 1:
+                        pass
+                    elif player == 2:
+                        pass
+
+        # rect = pygame.Rect(
+        #     board_origin[0] + 7 * cell_size + cell_size * 5/6 + 2,
+        #     board_origin[1] + 5 * cell_size + cell_size * 1/6,
+        #     cell_size * 2/6 - 2, cell_size * 10/6
+        # )
+        # pygame.draw.rect(screen, COLOR_WALLS, rect)
 
         # AI Move button?
         pass
