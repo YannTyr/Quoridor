@@ -175,7 +175,7 @@ def main():
 
         # Draw walls
         for player in range(1, PLAYERS_NUMBER + 1):
-            for wall in walls[player] if wall["placed"]:
+            for wall in walls[player]:
 
                 # Draw a wall if it is on the board
                 if wall["placed"]:
