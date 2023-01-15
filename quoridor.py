@@ -31,12 +31,12 @@ class Quoridor:
             self.board.append(row)
 
         # Initialize players' pawns (i, j) = (y, x)
-        self.pawns_locations = {"1": (0, self.width // 2),
-                                "2": (self.height - 1, self.width // 2)}
+        self.pawns_locations = {"1": (self.height - 1, self.width // 2),
+                                "2": (0, self.width // 2)}
 
         # Set pawn on start positions
         self.board[-1][self.width//2]["player"] = 1
-        self.board[0][self.width//2]["player"] = 2
+        self.board[6][self.width//2]["player"] = 2
 
         # # Double pawns if this game for 4 players
         # if players_number == 4:
@@ -87,25 +87,51 @@ class Quoridor:
         for move in main_moves:
             i, j = move
             if 0 <= i < self.height and 0 <= j < self.width:
-                if self.board[i][j]["player"] == 0:
-                    # there will be walls' conditions
 
-                    available_moves.append((i, j))
+                if self.board[i][j]["player"] == 0:
+                    if not self.is_barrier((pawn_i, pawn_j), (i, j)):
+                        available_moves.append((i, j))
 
                 # Add double moves
-                # elif walls-condition-1:
                 else:
-                    i += (i - pawn_i)
-                    j += (j - pawn_j)
-                    if 0 <= i < self.height and 0 <= j < self.width:
-                        if self.board[i][j]["player"] == 0:
-                            # there will be walls' conditions
+                    new_i = i + (i - pawn_i)
+                    new_j = j + (j - pawn_j)
+                    if 0 <= new_i < self.height and 0 <= new_j < self.width:
+                        if not self.is_barrier((i, j), (new_i, new_j)):
+                            if self.board[new_i][new_j]["player"] == 0:
+                                available_moves.append((new_i, new_j))
 
-                            available_moves.append((i, j))
+                        # Add double side move
+                        else:
+                            if new_i == i:
+                                for new_i in [i - 1, i + 1]:
+                                    if self.board[new_i][j]["player"] == 0:
+                                        if not self.is_barrier((i, j), (new_i, j)):
+                                            available_moves.append((new_i, j))
+                            if new_j == j:
+                                for new_j in [j - 1, j + 1]:
+                                    if self.board[i][new_j]["player"] == 0:
+                                        if not self.is_barrier((i, j), (i, new_j)):
+                                            available_moves.append((i, new_j))
 
-                # Add side double moves
-                # elif walls-condition-2:
         print("available_moves: ", available_moves)
         return available_moves
 
+    def is_barrier(self, loc_a, loc_b):
+        i, j = loc_a[0], loc_a[1]
+        fin_i, fin_j = loc_b[0], loc_b[1]
+        d_i, d_j = i - fin_i, j - fin_j
+        if d_i == -1:
+            if self.board[i][j]["wall_down"]:
+                return True
+        elif d_i == 1:
+            if self.board[fin_i][fin_j]["wall_down"]:
+                return True
+        elif d_j == -1:
+            if self.board[i][j]["wall_right"]:
+                return True
+        elif d_j == 1:
+            if self.board[fin_i][fin_j]["wall_right"]:
+                return True
+        return False
 
