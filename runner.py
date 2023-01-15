@@ -22,8 +22,8 @@ RED = (180, 60, 60)
 COLOR_BACKGROUND = (13, 2, 2)
 COLOR_SQUARES = (16, 16, 16)
 COLOR_BORDERS = (50, 50, 50)
-COLOR_WALLS = (200, 200, 200)
-COLOR_WALLS_A = (240, 240, 240)
+COLOR_WALLS = (205, 205, 205)
+COLOR_WALLS_A = (255, 255, 255)
 COLOR_TEXT = (250, 250, 250)
 COLOR_PLAYERS = {
     "1": (230, 220, 130),
@@ -43,14 +43,16 @@ walls = {
             "loc": (None, None),
             "orientation": "horizontal",
             "placed": False,
-            'n': i
+            "active": False,
+            "player": player,
+            "n": i
         }
         for i in range(0, WALLS_NUMBER)
     ]
     for player in range(1, PLAYERS_NUMBER + 1)
 }
-walls[1][6] = {"loc": (7, 0), "orientation": "vertical", "placed": True}
-walls[1][7] = {"loc": (0, 7), "orientation": "horizontal", "placed": True}
+walls[1][6] = {"loc": (7, 0), "orientation": "vertical", "placed": True, "active": False, "player": 1}
+walls[2][7] = {"loc": (0, 7), "orientation": "horizontal", "placed": True, "active": False, "player": 2}
 print(walls)
 
 
@@ -92,7 +94,7 @@ def main():
 
     # Create game and AI agent
     game = Quoridor(height=HEIGHT, width=WIDTH, walls=WALLS_NUMBER)
-    # ai =
+    # ai = QuoridorAI()
 
     # Show instructions initially
     instructions = True
@@ -158,7 +160,7 @@ def main():
                         board_origin[1] + i * cell_size + (cell_size - pawn_size / 2) / 2,
                         pawn_size / 2, pawn_size / 2)
                     pygame.draw.rect(screen, COLOR_PLAYERS[str(active_player)], rect)
-                
+
                 row.append(rect)
             cells.append(row)
 
@@ -179,10 +181,15 @@ def main():
         pygame.draw.rect(screen, COLOR_BORDERS, storage_rect_2, int(cell_size * 0.05))
 
         # Draw walls
+        walls_rects = []
         for player in range(1, PLAYERS_NUMBER + 1):
             for wall in walls[player]:
                 wall_width = cell_size * 2/8
                 wall_height = cell_size * 10/6
+                if not wall["active"]:
+                    color = COLOR_WALLS
+                else:
+                    color = COLOR_WALLS_A
 
                 # Draw a wall if it is on the board
                 if wall["placed"]:
@@ -194,7 +201,7 @@ def main():
                         x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1/24 * cell_size
                         y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 1/6
                     wall_rect = pygame.Rect(x, y, wall_width, wall_height)
-                    pygame.draw.rect(screen, COLOR_WALLS, wall_rect)
+                    pygame.draw.rect(screen, color, wall_rect)
 
                 # Draw a wall if it is unused
                 else:
@@ -202,23 +209,16 @@ def main():
                         x = storage_origin_1[0] + cell_size / 6
                         # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
                         y = storage_origin_1[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
-                        wall_width, wall_height = wall_height, wall_width
-                        wall_rect = pygame.Rect(x, y, wall_width, wall_height)
-                        pygame.draw.rect(screen, COLOR_WALLS, wall_rect)
                     elif player == 2:
                         x = storage_origin_2[0] + cell_size / 6
                         # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
                         y = storage_origin_2[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
-                        wall_width, wall_height = wall_height, wall_width
-                        wall_rect = pygame.Rect(x, y, wall_width, wall_height)
-                        pygame.draw.rect(screen, COLOR_WALLS, wall_rect)
+                    wall_width, wall_height = wall_height, wall_width
+                    wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                    pygame.draw.rect(screen, color, wall_rect)
+                walls_rects.append((wall, wall_rect))
 
-        # rect = pygame.Rect(
-        #     board_origin[0] + 7 * cell_size + cell_size * 5/6 + 2,
-        #     board_origin[1] + 5 * cell_size + cell_size * 1/6,
-        #     cell_size * 2/6 - 2, cell_size * 10/6
-        # )
-        # pygame.draw.rect(screen, COLOR_WALLS, rect)
+
 
         # AI Move button?
         pass
@@ -239,8 +239,8 @@ def main():
                     print("event.pos: ", event.pos)
 
                     # Check if the click was on the board
-                    up, down = board_origin[1], board_origin[1] + board_height - 9  # -9px because of rounding
-                    left, right = board_origin[0], board_origin[0] + board_width - 9
+                    up, down = board_origin[1], board_origin[1] + board_height
+                    left, right = board_origin[0], board_origin[0] + board_width
                     if up < event.pos[1] < down and left < event.pos[0] < right:
 
                         # Get a coordinates (i, j) of the clicked cell
@@ -266,6 +266,21 @@ def main():
                             pawn_active = False
                             highlight_pawn = False
                             turn += 1
+
+                    # Check if the click was on a wall
+                    for wall in walls_rects:
+                        double_click = False
+                        if wall[0]["active"]:
+                            wall[0]["active"] = False
+                            double_click = True
+                        if wall[1].collidepoint(event.pos):
+                            if not wall[0]["placed"] and wall[0]["player"] == active_player:
+                                pawn_active = False
+                                highlight_pawn = False
+                                if double_click:
+                                    wall[0]["active"] = False
+                                else:
+                                    wall[0]["active"] = True
 
             # if event.type == pygame.MOUSEBUTTONUP:
 
