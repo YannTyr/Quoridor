@@ -1,6 +1,7 @@
 import random
 import itertools
 
+
 class Quoridor:
     """
     Game representation.
@@ -21,9 +22,10 @@ class Quoridor:
             for j in range(self.width):
                 row.append(
                     {"player": 0,
-                     "wall_up": False,
+                     "wall_origin": False,
+                     # "wall_up": False,
                      "wall_down": False,
-                     "wall_left": False,
+                     # "wall_left": False,
                      "wall_right": False}
                 )
             self.board.append(row)

@@ -51,9 +51,6 @@ walls = {
     ]
     for player in range(1, PLAYERS_NUMBER + 1)
 }
-walls[1][6] = {"loc": (7, 0), "orientation": "vertical", "placed": True, "active": False, "player": 1}
-walls[2][7] = {"loc": (0, 7), "orientation": "horizontal", "placed": True, "active": False, "player": 2}
-print(walls)
 
 
 def main():
@@ -103,8 +100,9 @@ def main():
     # Counter of turns
     turn = 0
 
-    pawn_active = False
+    pawn_is_active = False
     highlight_pawn = False
+    active_wall = None
     game_is_active = True
 
     while True:
@@ -144,7 +142,7 @@ def main():
                 player = game.board[i][j]["player"]
                 if player != 0:
                     # Do not draw the active pawn, because it will be drawn later as an active pawn (optional)
-                    if not pawn_active or player != active_player:
+                    if not pawn_is_active or player != active_player:
                         rect = pygame.Rect(
                             board_origin[0] + j * cell_size + (cell_size - pawn_size) / 2,
                             board_origin[1] + i * cell_size + (cell_size - pawn_size) / 2,
@@ -154,7 +152,7 @@ def main():
                     game.pawns_locations[str(player)] = (i, j)
 
                 # Show where player can move
-                if pawn_active and (i, j) in game.available_moves(active_player):
+                if pawn_is_active and (i, j) in game.available_moves(active_player):
                     rect = pygame.Rect(
                         board_origin[0] + j * cell_size + (cell_size - pawn_size / 2) / 2,
                         board_origin[1] + i * cell_size + (cell_size - pawn_size / 2) / 2,
@@ -203,7 +201,7 @@ def main():
                     wall_rect = pygame.Rect(x, y, wall_width, wall_height)
                     pygame.draw.rect(screen, color, wall_rect)
 
-                # Draw a wall if it is unused
+                # Draw a wall if it is unused yet (laying on a "wall storage")
                 else:
                     if player == 1:
                         x = storage_origin_1[0] + cell_size / 6
@@ -238,49 +236,106 @@ def main():
                 if event.button == 1:
                     print("event.pos: ", event.pos)
 
-                    # Check if the click was on the board
-                    up, down = board_origin[1], board_origin[1] + board_height
-                    left, right = board_origin[0], board_origin[0] + board_width
-                    if up < event.pos[1] < down and left < event.pos[0] < right:
+                    if game_is_active:
 
-                        # Get a coordinates (i, j) of the clicked cell
-                        i = int((event.pos[1] - board_origin[1]) / cell_size)
-                        j = int((event.pos[0] - board_origin[0]) / cell_size)
-                        print(j, i)
+                        # Check if the click was on the board
+                        up, down = board_origin[1], board_origin[1] + board_height
+                        left, right = board_origin[0], board_origin[0] + board_width
+                        if up < event.pos[1] < down and left < event.pos[0] < right:
 
-                        # Activate pawn
-                        if game.board[i][j]["player"] == active_player:
-                            if pawn_active:
-                                pawn_active = False
-                                highlight_pawn = False
-                            else:
-                                highlight_pawn = True
-                                pawn_active = True
+                            # Get a coordinates (i, j) of the clicked cell
+                            i = int((event.pos[1] - board_origin[1]) / cell_size)
+                            j = int((event.pos[0] - board_origin[0]) / cell_size)
+                            print(j, i)
 
-                        # Make a move
-                        if (i, j) in game.available_moves(active_player) and pawn_active:
-                            game.board[i][j]["player"] = active_player
-                            player = str(active_player)
-                            game.board[game.pawns_locations[player][0]][game.pawns_locations[player][1]]["player"] = 0
-                            game.pawns_locations[str(active_player)] = (i, j)
-                            pawn_active = False
-                            highlight_pawn = False
-                            turn += 1
-
-                    # Check if the click was on a wall
-                    for wall in walls_rects:
-                        double_click = False
-                        if wall[0]["active"]:
-                            wall[0]["active"] = False
-                            double_click = True
-                        if wall[1].collidepoint(event.pos):
-                            if not wall[0]["placed"] and wall[0]["player"] == active_player:
-                                pawn_active = False
-                                highlight_pawn = False
-                                if double_click:
-                                    wall[0]["active"] = False
+                            # Activate pawn
+                            if game.board[i][j]["player"] == active_player:
+                                if pawn_is_active:
+                                    pawn_is_active = False
+                                    highlight_pawn = False
                                 else:
-                                    wall[0]["active"] = True
+                                    highlight_pawn = True
+                                    pawn_is_active = True
+
+                            # Make a move
+                            if (i, j) in game.available_moves(active_player) and pawn_is_active:
+                                game.board[i][j]["player"] = active_player
+                                player = str(active_player)
+                                game.board[game.pawns_locations[player][0]][game.pawns_locations[player][1]]["player"] = 0
+                                game.pawns_locations[str(active_player)] = (i, j)
+                                pawn_is_active = False
+                                highlight_pawn = False
+                                turn += 1
+
+                        # Check if the click was on a wall
+                        for wall in walls_rects:
+                            double_click = False
+                            if wall[0]["active"]:
+                                wall[0]["active"] = False
+                                # active_wall = None
+                                double_click = True
+                            if wall[1].collidepoint(event.pos):
+                                if not wall[0]["placed"] and wall[0]["player"] == active_player:
+                                    pawn_is_active = False
+                                    highlight_pawn = False
+                                    if double_click:
+                                        wall[0]["active"] = False
+                                        active_wall = None
+                                    else:
+                                        wall[0]["active"] = True
+                                        active_wall = wall[0]
+
+                        # Placing a wall
+                        if active_wall:
+                            wall_v_width = cell_size * 2/8
+                            wall_v_height = cell_size * 4/6
+                            wall_h_width, wall_h_height = wall_v_height, wall_v_width
+
+                            for i in range(HEIGHT):
+                                for j in range(WIDTH):
+                                    x_v = board_origin[0] + j * cell_size + cell_size * 5/6 + 1/24 * cell_size
+                                    y_v = board_origin[1] + i * cell_size + cell_size * 1/6
+                                    wall_rect_ver = pygame.Rect(x_v, y_v, wall_v_width, wall_v_height)
+
+                                    x_h = board_origin[0] + j * cell_size + cell_size * 1 / 6
+                                    y_h = board_origin[1] + i * cell_size + cell_size * 5 / 6 + 1 / 24 * cell_size
+                                    wall_rect_hor = pygame.Rect(x_h, y_h, wall_h_width, wall_h_height)
+
+                                    set_horizontal = wall_rect_hor.collidepoint(event.pos)
+                                    set_vertical = wall_rect_ver.collidepoint(event.pos)
+                                    if set_horizontal or set_vertical:
+                                        if i == HEIGHT - 1:
+                                            i -= 1
+                                        if j == WIDTH - 1:
+                                            j -= 1
+
+                                        no_h_barriers = not(
+                                            game.board[i][j]["wall_down"] or game.board[i][j + 1]["wall_down"]
+                                        )
+                                        no_v_barriers = not(
+                                                game.board[i][j]["wall_right"] or game.board[i + 1][j]["wall_right"]
+                                        )
+
+                                        if (set_horizontal and no_h_barriers or set_vertical and no_v_barriers) \
+                                                and not game.board[i][j]["wall_origin"]:
+                                            if set_horizontal:
+                                                active_wall["orientation"] = "horizontal"
+                                                game.board[i][j]["wall_origin"] = True
+                                                game.board[i][j]["wall_down"] = True
+                                                game.board[i][j + 1]["wall_down"] = True
+                                            else:
+                                                active_wall["orientation"] = "vertical"
+                                                game.board[i][j]["wall_origin"] = True
+                                                game.board[i][j]["wall_right"] = True
+                                                game.board[i + 1][j]["wall_right"] = True
+                                            active_wall["loc"] = (i, j)
+                                            active_wall["placed"] = True
+                                            active_wall["active"] = False
+                                            active_wall = None
+                                            pawn_is_active = False
+                                            highlight_pawn = False
+                                            turn += 1
+
 
             # if event.type == pygame.MOUSEBUTTONUP:
 
