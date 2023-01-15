@@ -39,14 +39,18 @@ players_names = {
 
 walls = {
     player: [
-        # [None, None, False] for _ in range(WALLS_NUMBER)
-        {"loc": (None, None),
-        "orientation": "horizontal",
-        "placed": False}
+        {
+            "loc": (None, None),
+            "orientation": "horizontal",
+            "placed": False,
+            'n': i
+        }
+        for i in range(0, WALLS_NUMBER)
     ]
     for player in range(1, PLAYERS_NUMBER + 1)
 }
-walls[1][0] = {"loc": (0, 7), "orientation": "horizontal", "placed": True}
+walls[1][6] = {"loc": (7, 0), "orientation": "vertical", "placed": True}
+walls[1][7] = {"loc": (0, 7), "orientation": "horizontal", "placed": True}
 print(walls)
 
 
@@ -76,11 +80,12 @@ def main():
     board_origin = ((width / 2 - board_width / 2), (height / 2 - board_height / 2))
 
     pawn_size = cell_size / 2.1
+    #
+    # wall_width = cell_size * 2/6 - 2
+    # wall_height = cell_size * 10/6
 
-    wall_width = cell_size * 2/6 - 2
-    wall_height = cell_size * 10/6
-
-    storage_width = board_width / 4 + 10
+    # storage_width = board_width / 4
+    storage_width = cell_size * 2
     storage_height = board_height / 2
     storage_origin_1 = (board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8)
     storage_origin_2 = (board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/8)
@@ -176,23 +181,37 @@ def main():
         # Draw walls
         for player in range(1, PLAYERS_NUMBER + 1):
             for wall in walls[player]:
+                wall_width = cell_size * 2/8
+                wall_height = cell_size * 10/6
 
                 # Draw a wall if it is on the board
                 if wall["placed"]:
-                    x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1
-                    y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 1/6
-                    if wall["orientation"] == "vertical":
-                        x, y = y, x
+                    if wall["orientation"] == "horizontal":
+                        x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 1/6
+                        y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 5/6 + 1/24 * cell_size
                         wall_width, wall_height = wall_height, wall_width
-                    rect = pygame.Rect(x, y, wall_width, wall_height)
-                    pygame.draw.rect(screen, COLOR_WALLS, rect)
+                    else:
+                        x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1/24 * cell_size
+                        y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 1/6
+                    wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                    pygame.draw.rect(screen, COLOR_WALLS, wall_rect)
 
                 # Draw a wall if it is unused
                 else:
                     if player == 1:
-                        pass
+                        x = storage_origin_1[0] + cell_size / 6
+                        # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
+                        y = storage_origin_1[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
+                        wall_width, wall_height = wall_height, wall_width
+                        wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                        pygame.draw.rect(screen, COLOR_WALLS, wall_rect)
                     elif player == 2:
-                        pass
+                        x = storage_origin_2[0] + cell_size / 6
+                        # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
+                        y = storage_origin_2[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
+                        wall_width, wall_height = wall_height, wall_width
+                        wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                        pygame.draw.rect(screen, COLOR_WALLS, wall_rect)
 
         # rect = pygame.Rect(
         #     board_origin[0] + 7 * cell_size + cell_size * 5/6 + 2,
