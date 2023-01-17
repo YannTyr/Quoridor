@@ -7,12 +7,12 @@ class Quoridor:
     Game representation.
     """
 
-    def __init__(self, height=9, width=9, walls=10, players_number=2):
+    def __init__(self, height=9, width=9, walls_number=10, players_number=2):
 
         # Set initial size and number of walls
         self.height = height
         self.width = width
-        self.walls = walls
+        self.walls_number = walls_number
         self.players_number = players_number
 
         # Initialize an empty board
@@ -31,12 +31,12 @@ class Quoridor:
             self.board.append(row)
 
         # Initialize players' pawns (i, j) = (y, x)
-        self.pawns_locations = {"1": (self.height - 1, self.width // 2),
+        self.pawns_loc = {"1": (self.height - 1, self.width // 2),
                                 "2": (0, self.width // 2)}
 
         # Set pawn on start positions
         self.board[-1][self.width//2]["player"] = 1
-        self.board[6][self.width//2]["player"] = 2
+        self.board[0][self.width//2]["player"] = 2
 
         # # Double pawns if this game for 4 players
         # if players_number == 4:
@@ -44,6 +44,21 @@ class Quoridor:
         #     self.pawns_locations["4"] = (self.height // 2, self.width - 1)
         #     self.board[self.height // 2][0]["player"] = 3
         #     self.board[self.height // 2][-1]["player"] = 4
+
+        self.walls = {
+            player: [
+                {
+                    "loc": (None, None),
+                    "orientation": "horizontal",
+                    "placed": False,
+                    "active": False,
+                    "player": player,
+                    "n": i
+                }
+                for i in range(0, walls_number)
+            ]
+            for player in range(1, players_number + 1)
+        }
 
     def player(self, turn):
         """Returns player who has the next turn on a board."""
@@ -74,10 +89,10 @@ class Quoridor:
     def available_moves(self, player):
         """Return list with cells where pawn can move."""
         available_moves = []
-        print("pawns_locations: ", self.pawns_locations)
+        print("pawns_locations: ", self.pawns_loc)
         print("player: ", player)
-        pawn_i = self.pawns_locations[str(player)][0]
-        pawn_j = self.pawns_locations[str(player)][1]
+        pawn_i = self.pawns_loc[str(player)][0]
+        pawn_j = self.pawns_loc[str(player)][1]
 
         main_moves = [(pawn_i - 1, pawn_j),
                       (pawn_i + 1, pawn_j),
@@ -134,4 +149,12 @@ class Quoridor:
             if self.board[fin_i][fin_j]["wall_right"]:
                 return True
         return False
+
+    # def path_finder(self, board, player, pawns_loc):
+    #     frontier = self.available_moves(player)
+    #     while frontier:
+    #         cell = frontier[0]
+    #         frontier = frontier[1:]
+    #         frontier.append()
+
 
