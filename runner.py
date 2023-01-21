@@ -21,11 +21,11 @@ GREEN = (25, 180, 25)
 RED = (180, 60, 60)
 
 COLOR_BACKGROUND = (13, 2, 2)
-COLOR_SQUARES = (16, 16, 16)
+COLOR_SQUARES = (18, 15, 15)
 COLOR_BORDERS = (50, 50, 50)
 COLOR_WALLS = (190, 190, 190)
 COLOR_WALLS_A = (255, 255, 255)
-COLOR_TEXT = (250, 250, 250)
+COLOR_TEXT = (240, 240, 240)
 COLOR_PLAYERS = {
     "1": (230, 220, 130),
     "1a": (250, 250, 160),
@@ -51,8 +51,8 @@ def main():
 
     # Fonts
     SERIF = "assets/fonts/EBGaramond-VariableFont_wght.ttf"
-    title_font = pygame.font.Font(SERIF, 80)
-    subtitle_font = pygame.font.Font(SERIF, 40)
+    title_font = pygame.font.Font(SERIF, 90)
+    subtitle_font = pygame.font.Font(SERIF, 45)
     instruction_font = pygame.font.Font(SERIF, 30)
 
     # Compute board size
@@ -240,6 +240,7 @@ def main():
                                 else:
                                     highlight_pawn = True
                                     pawn_is_active = True
+                                    active_wall = None
                                     for wall in game.walls[active_player]:
                                         wall["active"] = False
 
