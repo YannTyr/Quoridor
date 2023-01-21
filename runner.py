@@ -106,6 +106,7 @@ def main():
 
         if game_is_active:
             active_player = game.player(turn)
+        turn_is_done = False
 
         # Draw the board
         cells = []
@@ -222,38 +223,6 @@ def main():
 
                     if game_is_active:
 
-                        # Check if the click was on the board
-                        up, down = board_origin[1], board_origin[1] + board_height
-                        left, right = board_origin[0], board_origin[0] + board_width
-                        if up < event.pos[1] < down and left < event.pos[0] < right:
-
-                            # Get a coordinates (i, j) of the clicked cell
-                            i = int((event.pos[1] - board_origin[1]) / cell_size)
-                            j = int((event.pos[0] - board_origin[0]) / cell_size)
-                            print(j, i)
-
-                            # Activate pawn
-                            if game.board[i][j]["player"] == active_player:
-                                if pawn_is_active:
-                                    pawn_is_active = False
-                                    highlight_pawn = False
-                                else:
-                                    highlight_pawn = True
-                                    pawn_is_active = True
-                                    active_wall = None
-                                    for wall in game.walls[active_player]:
-                                        wall["active"] = False
-
-                            # Make a move
-                            if (i, j) in game.available_moves(game.board, active_player, game.pawns_loc) \
-                                    and pawn_is_active:
-                                game.board[i][j]["player"] = active_player
-                                game.board[game.pawns_loc[active_player][0]][game.pawns_loc[active_player][1]]["player"] = 0
-                                game.pawns_loc[active_player] = (i, j)
-                                pawn_is_active = False
-                                highlight_pawn = False
-                                turn += 1
-
                         # Check if the click was on a wall
                         for wall in walls_rects:
                             if wall[1].collidepoint(event.pos):
@@ -273,7 +242,7 @@ def main():
                                         active_wall = wall[0]
                             else:
                                 wall[0]["active"] = False
-                                active_wall = None
+                                # active_wall = None
 
                         # Placing a wall
                         if active_wall:
@@ -332,6 +301,7 @@ def main():
                                                     pawn_is_active = False
                                                     highlight_pawn = False
                                                     turn += 1
+                                                    turn_is_done = True
                                             else:
                                                 virt_board[i][j]["wall_origin"] = True
                                                 virt_board[i][j]["wall_right"] = True
@@ -352,9 +322,47 @@ def main():
                                                     pawn_is_active = False
                                                     highlight_pawn = False
                                                     turn += 1
+                                                    turn_is_done = True
 
+                        # Check if the click was on the board
+                        up, down = board_origin[1], board_origin[1] + board_height
+                        left, right = board_origin[0], board_origin[0] + board_width
+                        if up < event.pos[1] < down and left < event.pos[0] < right:
+
+                            # Get a coordinates (i, j) of the clicked cell
+                            i = int((event.pos[1] - board_origin[1]) / cell_size)
+                            j = int((event.pos[0] - board_origin[0]) / cell_size)
+                            print(j, i)
+
+                            # Activate pawn
+                            if game.board[i][j]["player"] == active_player:
+                                if pawn_is_active:
+                                    pawn_is_active = False
+                                    highlight_pawn = False
+                                else:
+                                    highlight_pawn = True
+                                    pawn_is_active = True
+                                    active_wall = None
+                                    for wall in game.walls[active_player]:
+                                        wall["active"] = False
+
+                            # Make a move
+                            if (i, j) in game.available_moves(game.board, active_player, game.pawns_loc) \
+                                    and pawn_is_active:
+                                game.board[i][j]["player"] = active_player
+                                game.board[game.pawns_loc[active_player][0]][game.pawns_loc[active_player][1]]["player"] = 0
+                                game.pawns_loc[active_player] = (i, j)
+                                pawn_is_active = False
+                                highlight_pawn = False
+                                turn += 1
+                                turn_is_done = True
 
             # if event.type == pygame.MOUSEBUTTONUP:
+
+        if turn_is_done:
+            pawn_is_active = False
+            highlight_pawn = False
+            active_wall = None
 
 
         # Draw activated pawn
