@@ -273,6 +273,7 @@ def main():
                                         active_wall = wall[0]
                             else:
                                 wall[0]["active"] = False
+                                active_wall = None
 
                         # Placing a wall
                         if active_wall:
