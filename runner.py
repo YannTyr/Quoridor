@@ -300,7 +300,6 @@ def main():
                                                     active_wall = None
                                                     pawn_is_active = False
                                                     highlight_pawn = False
-                                                    turn += 1
                                                     turn_is_done = True
                                             else:
                                                 virt_board[i][j]["wall_origin"] = True
@@ -321,7 +320,6 @@ def main():
                                                     active_wall = None
                                                     pawn_is_active = False
                                                     highlight_pawn = False
-                                                    turn += 1
                                                     turn_is_done = True
 
                         # Check if the click was on the board
@@ -354,12 +352,12 @@ def main():
                                 game.pawns_loc[active_player] = (i, j)
                                 pawn_is_active = False
                                 highlight_pawn = False
-                                turn += 1
                                 turn_is_done = True
 
             # if event.type == pygame.MOUSEBUTTONUP:
 
         if turn_is_done:
+            turn += 1
             pawn_is_active = False
             highlight_pawn = False
             active_wall = None
