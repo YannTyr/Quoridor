@@ -86,12 +86,13 @@ class Quoridor:
             return True
         return False
 
-    def available_moves(self, board, player, loc):
+    def available_moves(self, board, loc, ai=False):
         """Return list with cells where pawn can move."""
         available_moves = []
-        print("player: ", player)
-        pawn_i = loc[player][0]
-        pawn_j = loc[player][1]
+        # pawn_i = loc[player][0]
+        # pawn_j = loc[player][1]
+        pawn_i = loc[0]
+        pawn_j = loc[1]
 
         main_moves = [(pawn_i - 1, pawn_j),
                       (pawn_i + 1, pawn_j),
@@ -102,12 +103,13 @@ class Quoridor:
             i, j = move
             if 0 <= i < self.height and 0 <= j < self.width:
 
-                if board[i][j]["player"] == 0:
+                # Add main moves
+                if board[i][j]["player"] == 0 or ai is True:
                     if not self.is_barrier(board, (pawn_i, pawn_j), (i, j)):
                         available_moves.append((i, j))
 
-                # Add double moves
-                else:
+                # Add double moves (jump over other pawn)
+                if board[i][j]["player"] != 0:
                     new_i = i + (i - pawn_i)
                     new_j = j + (j - pawn_j)
                     if 0 <= new_i < self.height and 0 <= new_j < self.width:
@@ -117,22 +119,24 @@ class Quoridor:
                                 if board[new_i][new_j]["player"] == 0:
                                     available_moves.append((new_i, new_j))
 
-                            # Add double side move
-                            else:
-                                if new_i == i:
-                                    for new_i in [i - 1, i + 1]:
-                                        if 0 <= new_i < self.height:
-                                            if board[new_i][j]["player"] == 0:
-                                                if not self.is_barrier(board, (i, j), (new_i, j)):
-                                                    available_moves.append((new_i, j))
-                                if new_j == j:
-                                    for new_j in [j - 1, j + 1]:
-                                        if 0 <= new_j < self.width:
-                                            if board[i][new_j]["player"] == 0:
-                                                if not self.is_barrier(board, (i, j), (i, new_j)):
-                                                    available_moves.append((i, new_j))
+                    # Add double side moves
+                    if not self.is_barrier(board, (pawn_i, pawn_j), (i, j)):
+                        edge_jump = new_j == -1 or new_j == self.width or new_i == -1 or new_i == self.height
+                        if self.is_barrier(board, (i, j), (new_i, new_j)) or edge_jump:
+                            if new_i == i:
+                                for new_i in [i - 1, i + 1]:
+                                    if 0 <= new_i < self.height:
+                                        if board[new_i][j]["player"] == 0:
+                                            if not self.is_barrier(board, (i, j), (new_i, j)):
+                                                available_moves.append((new_i, j))
+                            if new_j == j:
+                                for new_j in [j - 1, j + 1]:
+                                    if 0 <= new_j < self.width:
+                                        if board[i][new_j]["player"] == 0:
+                                            if not self.is_barrier(board, (i, j), (i, new_j)):
+                                                available_moves.append((i, new_j))
 
-        print("available_moves: ", available_moves)
+        # print("available_moves: ", available_moves)
         return available_moves
 
     def is_barrier(self, board, loc_a, loc_b):
@@ -156,7 +160,7 @@ class Quoridor:
 
     def path_finder(self, virt_board, player, pawns_loc):
         """Return True if path to other side of the board is clear (and victory is available)."""
-        frontier = [cell for cell in self.available_moves(virt_board, player, pawns_loc)]
+        frontier = [cell for cell in self.available_moves(virt_board, pawns_loc[player])]
         print("frontier", frontier)
         explored = set()
         while True:
@@ -175,7 +179,7 @@ class Quoridor:
             explored.add(cell)
 
             frontier = frontier[:-1]
-            for new_cell in self.available_moves(virt_board, player, pawn_loc):
+            for new_cell in self.available_moves(virt_board, pawn_loc[player]):
                 if new_cell not in frontier and new_cell not in explored:
                     frontier.append(new_cell)
 
