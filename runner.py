@@ -24,19 +24,20 @@ RED = (180, 60, 60)
 COLOR_BACKGROUND = (13, 2, 2)
 COLOR_SQUARES = (18, 15, 15)
 COLOR_BORDERS = (50, 50, 50)
-COLOR_WALLS = (190, 190, 190)
-COLOR_WALLS_A = (255, 255, 255)
+COLOR_WALLS = (195, 195, 195)
+COLOR_WALLS_A = (175, 5, 5)
 COLOR_TEXT = (240, 240, 240)
 COLOR_PLAYERS = {
     "1": (230, 220, 130),
     "1a": (250, 250, 160),
-    "2": (200, 75, 75),
+    "2": (210, 65, 65),
     "2a": (255, 90, 90)
 }
 
 players_names = {
     1: "Theseus",
-    2: "Minotaur"
+    2: "Zombie"
+    # 2: "Minotaur
 }
 
 # Create game and AI agent
@@ -73,8 +74,8 @@ def main():
 
     pawn_size = cell_size / 2.1
     #
-    # wall_width = cell_size * 2/6 - 2
-    # wall_height = cell_size * 10/6
+    wall_width = cell_size * 2/8
+    wall_height = cell_size * 10/6
 
     storage_width = cell_size * 2
     storage_height = board_height / 2
@@ -170,8 +171,6 @@ def main():
         walls_rects = []
         for player in range(1, PLAYERS_NUMBER + 1):
             for wall in game.walls[player]:
-                wall_width = cell_size * 2/8
-                wall_height = cell_size * 10/6
                 if not wall["active"]:
                     color = COLOR_WALLS
                 else:
@@ -182,11 +181,11 @@ def main():
                     if wall["orientation"] == "horizontal":
                         x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 1/6
                         y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 5/6 + 1/24 * cell_size
-                        wall_width, wall_height = wall_height, wall_width
+                        wall_rect = pygame.Rect(x, y, wall_height, wall_width)
                     else:
                         x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1/24 * cell_size
                         y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 1/6
-                    wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                        wall_rect = pygame.Rect(x, y, wall_width, wall_height)
                     pygame.draw.rect(screen, color, wall_rect)
 
                 # Draw a wall if it is unused yet (laying on a "wall storage")
@@ -199,8 +198,7 @@ def main():
                         x = storage_origin_2[0] + cell_size / 6
                         # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
                         y = storage_origin_2[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
-                    wall_width, wall_height = wall_height, wall_width
-                    wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                    wall_rect = pygame.Rect(x, y, wall_height, wall_width)
                     pygame.draw.rect(screen, color, wall_rect)
                 walls_rects.append((wall, wall_rect))
                 # maybe better version (not ready yet):
@@ -218,7 +216,6 @@ def main():
 
         if active_player == 2:
             if game_is_active:
-                print("game_is_active")
                 item, i, j = ai.move(game.board, game.pawns_loc, active_player)
                 # ai.map_dist(game.board, active_player)
                 if item == "pawn":
@@ -242,6 +239,7 @@ def main():
 
                     if game_is_active:
                         if active_player == 1:
+
                             # Check if the click was on a wall
                             for wall in walls_rects:
                                 if wall[1].collidepoint(event.pos):
@@ -265,81 +263,46 @@ def main():
 
                             # Placing a wall
                             if active_wall:
-                                wall_v_width = cell_size * 2/8
-                                wall_v_height = cell_size * 4/6
-                                wall_h_width, wall_h_height = wall_v_height, wall_v_width
+                                x, y = event.pos
+                                cell_y = (y - board_origin[1] - 1/6 * cell_size) % cell_size
+                                cell_x = (x - board_origin[0] - 1/6 * cell_size) % cell_size
+                                orientation = None
+                                if cell_y <= cell_size * 4/6 <= cell_x:
+                                    orientation = "vertical"
+                                elif cell_y >= cell_size * 4/6 >= cell_x:
+                                    orientation = "horizontal"
+                                if orientation is not None:
+                                    i = int((y - board_origin[1] - 1 / 6 * cell_size) // cell_size)
+                                    j = int((x - board_origin[0] - 1 / 6 * cell_size) // cell_size)
+                                    if i == HEIGHT - 1:
+                                        i -= 1
+                                    if j == WIDTH - 1:
+                                        j -= 1
+                                    virt_wall = {
+                                        "loc": (i, j),
+                                        "orientation": orientation
+                                    }
+                                    # print(virt_wall.values())
+                                    # print([w.values() for w in game.available_walls(game.board, active_player)], sep="\n")
+                                    if virt_wall in game.available_walls(game.board, active_player):
+                                        if orientation == "horizontal":
+                                            # active_wall["orientation"] = "horizontal"
+                                            game.board[i][j]["wall_origin"] = True
+                                            game.board[i][j]["wall_down"] = True
+                                            game.board[i][j + 1]["wall_down"] = True
+                                        else:
+                                            active_wall["orientation"] = "vertical"
+                                            game.board[i][j]["wall_origin"] = True
+                                            game.board[i][j]["wall_right"] = True
+                                            game.board[i + 1][j]["wall_right"] = True
 
-                                for i in range(HEIGHT):
-                                    for j in range(WIDTH):
-                                        x_v = board_origin[0] + j * cell_size + cell_size * 5/6 + 1/24 * cell_size
-                                        y_v = board_origin[1] + i * cell_size + cell_size * 1/6
-                                        wall_rect_ver = pygame.Rect(x_v, y_v, wall_v_width, wall_v_height)
-
-                                        x_h = board_origin[0] + j * cell_size + cell_size * 1 / 6
-                                        y_h = board_origin[1] + i * cell_size + cell_size * 5 / 6 + 1 / 24 * cell_size
-                                        wall_rect_hor = pygame.Rect(x_h, y_h, wall_h_width, wall_h_height)
-
-                                        place_h_wall = wall_rect_hor.collidepoint(event.pos)
-                                        place_v_wall = wall_rect_ver.collidepoint(event.pos)
-                                        if place_h_wall or place_v_wall:
-                                            if i == HEIGHT - 1:
-                                                i -= 1
-                                            if j == WIDTH - 1:
-                                                j -= 1
-
-                                            no_h_barriers = not(
-                                                game.board[i][j]["wall_down"] or game.board[i][j + 1]["wall_down"]
-                                            )
-                                            no_v_barriers = not(
-                                                    game.board[i][j]["wall_right"] or game.board[i + 1][j]["wall_right"]
-                                            )
-                                            no_barriers = (place_h_wall and no_h_barriers
-                                                           or place_v_wall and no_v_barriers)\
-                                                          and not game.board[i][j]["wall_origin"]
-
-                                            if no_barriers:
-                                                # Adding a "virtual board" to check
-                                                # if pawns still can go to a win side of the board:
-                                                virt_board = copy.deepcopy(game.board)
-                                                if place_h_wall:
-                                                    virt_board[i][j]["wall_origin"] = True
-                                                    virt_board[i][j]["wall_down"] = True
-                                                    virt_board[i][j + 1]["wall_down"] = True
-
-                                                    if game.path_finder(virt_board, 1, game.pawns_loc) \
-                                                            and game.path_finder(virt_board, 2, game.pawns_loc):
-                                                        active_wall["orientation"] = "horizontal"
-                                                        game.board[i][j]["wall_origin"] = True
-                                                        game.board[i][j]["wall_down"] = True
-                                                        game.board[i][j + 1]["wall_down"] = True
-
-                                                        active_wall["loc"] = (i, j)
-                                                        active_wall["placed"] = True
-                                                        active_wall["active"] = False
-                                                        active_wall = None
-                                                        pawn_is_active = False
-                                                        highlight_pawn = False
-                                                        turn_is_done = True
-                                                else:
-                                                    virt_board[i][j]["wall_origin"] = True
-                                                    virt_board[i][j]["wall_right"] = True
-                                                    virt_board[i + 1][j]["wall_right"] = True
-
-                                                    if game.path_finder(virt_board, 1, game.pawns_loc) \
-                                                            and game.path_finder(virt_board, 2, game.pawns_loc):
-                                                        active_wall["orientation"] = "vertical"
-                                                        # game.walls["orientation"] = "vertical"
-                                                        game.board[i][j]["wall_origin"] = True
-                                                        game.board[i][j]["wall_right"] = True
-                                                        game.board[i + 1][j]["wall_right"] = True
-
-                                                        active_wall["loc"] = (i, j)
-                                                        active_wall["placed"] = True
-                                                        active_wall["active"] = False
-                                                        active_wall = None
-                                                        pawn_is_active = False
-                                                        highlight_pawn = False
-                                                        turn_is_done = True
+                                        active_wall["loc"] = (i, j)
+                                        active_wall["placed"] = True
+                                        active_wall["active"] = False
+                                        active_wall = None
+                                        pawn_is_active = False
+                                        highlight_pawn = False
+                                        turn_is_done = True
 
                             # Check if the click was on the board
                             up, down = board_origin[1], board_origin[1] + board_height
