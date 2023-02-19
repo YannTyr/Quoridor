@@ -6,6 +6,7 @@ class DumbAI:
     A primitive test AI.
     """
 
+    # Init does not work(
     # def __int__(self, width=9, height=9):
     #     print("__int__")
     #     from runner import game
@@ -16,12 +17,11 @@ class DumbAI:
         """Return object to be moved and its coordinates."""
         from runner import game
         item = "pawn"
-
+        # Get all possible moves and choose which of them that is closer to finish
         available_moves = game.available_moves(board, pawns_loc[player])
         distances = self.map_dist(board, player)
         available_moves.sort(key=lambda cell: distances[cell[0]][cell[1]])
         i, j = available_moves[0]
-
         return item, i, j
 
     def map_dist(self, board, player):
@@ -30,12 +30,12 @@ class DumbAI:
 
         # Matrix for distances
         distances = [[None for j in range(game.width)] for i in range(game.height)]
+
+        # Add cells with known distances (first/last row) and add them to the frontier
         if player == 1:
             win_side = 0
         elif player == 2:
             win_side = game.height - 1
-
-        # Add cells wint known distances (first/last row) and them to the frontier
         frontier = []
         for j in range(game.width):
             distances[win_side][j] = 0
