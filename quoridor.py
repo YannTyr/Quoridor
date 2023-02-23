@@ -215,7 +215,7 @@ class Quoridor:
                                     "orientation": orientation
                                 }
                                 available_walls.append(wall)
-            # print(*available_walls, sep="\n")
+            print(*available_walls, sep="\n")
             return available_walls
         else:
             return None

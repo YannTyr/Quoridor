@@ -1,9 +1,12 @@
+import copy
 import random
 
 
-class DumbAI:
+class TestAI:
     """
     A primitive test AI.
+    Looks for an optimal move in terms of the shortest distance for self.
+    Can not use walls.
     """
 
     # Init does not work(
@@ -22,14 +25,15 @@ class DumbAI:
         distances = self.map_dist(board, player)
         available_moves.sort(key=lambda cell: distances[cell[0]][cell[1]])
         i, j = available_moves[0]
-        return item, i, j
+        return item, None, i, j
 
     def map_dist(self, board, player):
         """Mapping distances from every cell to the win side of the board."""
         from runner import game
 
         # Matrix for distances
-        distances = [[None for j in range(game.width)] for i in range(game.height)]
+        max_value = game.width * game.height
+        distances = [[max_value for j in range(game.width)] for i in range(game.height)]
 
         # Add cells with known distances (first/last row) and add them to the frontier
         if player == 1:
@@ -53,7 +57,6 @@ class DumbAI:
                 for new_cell in game.available_moves(board, cell, ai=True):
                     if new_cell not in frontier and new_cell not in explored:
                         i, j = new_cell[0], new_cell[1]
-                        if dist == None: dist = 0
                         distances[i][j] = dist + 1
                         frontier.append(new_cell)
                         explored.append(new_cell)
@@ -61,5 +64,63 @@ class DumbAI:
                 explored.append(cell)
                 new_frontier = frontier
 
-        print(*distances, sep="\n", end="\n")
+        # print(*distances, sep="\n", end="\n")
+        # print(type(distances[4][4]))
         return distances
+
+
+class PrimitiveAI(TestAI):
+    """
+    Looks for an optimal move in terms of the shortest distance (to the finish line)
+    with respect to opponent's shortest distance.
+    Can use walls.
+    """
+    def move(self, board, pawns_loc, player):
+        """Return object to be moved and its coordinates."""
+        from runner import game
+        if player == 1:
+            opponent = 2
+        else:
+            opponent = 1
+        self_i, self_j = pawns_loc[player]
+        oppo_i, oppo_j = pawns_loc[opponent]
+
+        # item = "pawn"
+        item = "wall"
+        available_moves = game.available_moves(board, pawns_loc[player])
+        available_walls = game.available_walls(board, player)
+        self_distances = self.map_dist(board, player)
+        oppo_distances = self.map_dist(board, opponent)
+
+        rated_moves = []
+
+        available_moves.sort(key=lambda cell: self_distances[cell[0]][cell[1]])
+        i, j = available_moves[0]
+        distance = self_distances[i][j] - oppo_distances[oppo_i][oppo_j]
+        best_pawn_move = ("pawn", (i, j), None, distance)
+        rated_moves.append(best_pawn_move)
+
+        for wall in available_walls:
+            i, j = wall["loc"]
+            orientation = wall["orientation"]
+            state = copy.deepcopy(board)
+            state[i][j]["wall_origin"] = True
+            state[i][j]["orientation"] = orientation
+            if orientation == "horizontal":
+                state[i][j]["wall_down"] = True
+                state[i][j + 1]["wall_down"] = True
+            else:
+                state[i][j]["wall_right"] = True
+                state[i + 1][j]["wall_right"] = True
+            self_dist = self.map_dist(state, player)
+            opp_dist = self.map_dist(state, opponent)
+            delta = self_dist[self_i][self_j] - opp_dist[oppo_i][oppo_j]
+            rated_moves.append(("wall", (i, j), orientation, delta))
+
+        # rated_moves.sort(key=lambda item_loc_rate: item_loc_rate[2])
+        best_move = sorted(rated_moves, key=lambda item_loc_rate: item_loc_rate[-1])
+        item = best_move[0][0]
+        i, j = best_move[0][1]
+        orientation = best_move[0][2]
+
+        return item, orientation, i, j

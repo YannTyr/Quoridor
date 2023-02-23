@@ -2,9 +2,10 @@ import pygame
 import sys
 import time
 import copy
+import random
 
 from quoridor import Quoridor
-from AI import DumbAI
+import AI
 
 # Game settings
 HEIGHT = 9
@@ -42,7 +43,8 @@ players_names = {
 
 # Create game and AI agent
 game = Quoridor(height=HEIGHT, width=WIDTH, walls_number=WALLS_NUMBER)
-ai = DumbAI()
+# ai = AI.TestAI()
+ai = AI.PrimitiveAI()
 
 
 def main():
@@ -68,6 +70,7 @@ def main():
     board_height_abt = ((3 / 4) * height) - (BOARD_PADDING * 2)
     board_width_abt = board_height_abt
     cell_size = int(min(board_width_abt / WIDTH, board_height_abt / HEIGHT))
+    border_width = cell_size / 30
     board_height = cell_size * HEIGHT
     board_width = board_height
     board_origin = ((width / 2 - board_width / 2), (height / 2 - board_height / 2))
@@ -105,7 +108,7 @@ def main():
                 if event.type == pygame.QUIT:
                     sys.exit()
             # Show instruction
-            instructions = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size)
+            instructions = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size, border_width)
             continue  # Continue the loop
 
         if game_is_active:
@@ -180,10 +183,10 @@ def main():
                 if wall["placed"]:
                     if wall["orientation"] == "horizontal":
                         x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 1/6
-                        y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 5/6 + 1/24 * cell_size
+                        y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 5/6 + 1/30 * cell_size
                         wall_rect = pygame.Rect(x, y, wall_height, wall_width)
                     else:
-                        x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1/24 * cell_size
+                        x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 5/6 + 1/30 * cell_size
                         y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 1/6
                         wall_rect = pygame.Rect(x, y, wall_width, wall_height)
                     pygame.draw.rect(screen, color, wall_rect)
@@ -216,7 +219,7 @@ def main():
 
         if active_player == 2:
             if game_is_active:
-                item, i, j = ai.move(game.board, game.pawns_loc, active_player)
+                item, orientation, i, j = ai.move(game.board, game.pawns_loc, active_player)
                 # ai.map_dist(game.board, active_player)
                 if item == "pawn":
                     game.board[i][j]["player"] = active_player
@@ -224,8 +227,29 @@ def main():
                     game.pawns_loc[active_player] = (i, j)
                     turn_is_done = True
                 elif item == "wall":
-                    pass
-                print("ai moved")
+                    for wall in game.walls[active_player]:
+                        if not wall["placed"]:
+                            active_wall = wall
+                            if orientation == "horizontal":
+                                # active_wall["orientation"] = "horizontal"
+                                game.board[i][j]["wall_origin"] = True
+                                game.board[i][j]["wall_down"] = True
+                                game.board[i][j + 1]["wall_down"] = True
+                            else:
+                                active_wall["orientation"] = "vertical"
+                                game.board[i][j]["wall_origin"] = True
+                                game.board[i][j]["wall_right"] = True
+                                game.board[i + 1][j]["wall_right"] = True
+
+                            active_wall["loc"] = (i, j)
+                            active_wall["placed"] = True
+                            active_wall["active"] = False
+                            active_wall = None
+                            pawn_is_active = False
+                            highlight_pawn = False
+                            turn_is_done = True
+                            print("ai moved with wall")
+                            break
                 # print(game.pawns_loc)
                 # print(game.board[i][j])
 
@@ -388,7 +412,7 @@ def main():
 
 # def draw_pawn():
 
-def draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size):
+def draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size, border_width):
 
     # Check if game quit
     for event in pygame.event.get():
@@ -417,9 +441,12 @@ def draw_instructions(clock, screen, width, height, title_font, subtitle_font, i
     #                         left,            top,              width,     height
     # button_rect = pygame.Rect((3 / 8) * width, (3 / 4) * height, width / 4, height / 10)
     button_rect = pygame.Rect((3 / 8) * width, height / 2, width / 4, width / 4)
+    button_border_rect = pygame.Rect((3 / 8) * width - border_width, height / 2 - border_width,
+                                     width / 4 + 2 * border_width, width / 4 + 2 * border_width)
     button_text = subtitle_font.render("Play", True, COLOR_TEXT)
     button_text_rect = button_text.get_rect()
     button_text_rect.center = button_rect.center
+    pygame.draw.rect(screen, COLOR_BORDERS, button_border_rect)
     pygame.draw.rect(screen, COLOR_SQUARES, button_rect)
     screen.blit(button_text, button_text_rect)
 
