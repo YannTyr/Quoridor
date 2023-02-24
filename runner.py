@@ -11,7 +11,7 @@ import AI
 HEIGHT = 9
 WIDTH = 9
 PLAYERS_NUMBER = 2
-WALLS_NUMBER = 10
+WALLS_NUMBER = 12
 
 # Colors
 BLACK = (0, 0, 0)
@@ -25,13 +25,13 @@ RED = (180, 60, 60)
 COLOR_BACKGROUND = (13, 2, 2)
 COLOR_SQUARES = (18, 15, 15)
 COLOR_BORDERS = (50, 50, 50)
-COLOR_WALLS = (195, 195, 195)
+COLOR_WALLS = (200, 200, 200)
 COLOR_WALLS_A = (175, 5, 5)
 COLOR_TEXT = (240, 240, 240)
 COLOR_PLAYERS = {
-    "1": (230, 220, 130),
-    "1a": (250, 250, 160),
-    "2": (210, 65, 65),
+    "1": (205, 195, 120),
+    "1a": (230, 220, 10),
+    "2": (205, 65, 65),
     "2a": (255, 90, 90)
 }
 
@@ -82,8 +82,10 @@ def main():
 
     storage_width = cell_size * 2
     storage_height = board_height / 2
-    storage_origin_1 = (board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8)
-    storage_origin_2 = (board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/8)
+    storage_height = WALLS_NUMBER * wall_width * 2 + wall_width
+    # storage_origin_1 = (board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8)
+    storage_origin_1 = (board_origin[0] - storage_width - 50, (board_origin[1] + board_height) - storage_height - cell_size/6)
+    storage_origin_2 = (board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/6)
 
     # Show instructions initially
     instructions = True
@@ -174,13 +176,14 @@ def main():
         walls_rects = []
         for player in range(1, PLAYERS_NUMBER + 1):
             for wall in game.walls[player]:
-                if not wall["active"]:
-                    color = COLOR_WALLS
-                else:
-                    color = COLOR_WALLS_A
+                # if not wall["active"]:
+                #     color = COLOR_WALLS
+                # else:
+                #     color = COLOR_WALLS_A
 
                 # Draw a wall if it is on the board
                 if wall["placed"]:
+                    color = COLOR_WALLS
                     if wall["orientation"] == "horizontal":
                         x = board_origin[0] + wall["loc"][1] * cell_size + cell_size * 1/6
                         y = board_origin[1] + wall["loc"][0] * cell_size + cell_size * 5/6 + 1/30 * cell_size
@@ -193,14 +196,20 @@ def main():
 
                 # Draw a wall if it is unused yet (laying on a "wall storage")
                 else:
+                    if not wall["active"]:
+                        color = COLOR_PLAYERS[str(player)]
+                    else:
+                        color = COLOR_PLAYERS[str(player) + "a"]
                     if player == 1:
                         x = storage_origin_1[0] + cell_size / 6
                         # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
-                        y = storage_origin_1[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
+                        # y = storage_origin_1[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
+                        y = storage_origin_1[1] + wall_width + wall["n"] * wall_width * 2
                     elif player == 2:
                         x = storage_origin_2[0] + cell_size / 6
                         # y = storage_origin_2[1] + cell_size / 8 + wall["n"] * (wall_width + cell_size / 8)
-                        y = storage_origin_2[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
+                        # y = storage_origin_2[1] + board_width / 48 + wall["n"] * (wall_width + board_width / 50)
+                        y = storage_origin_2[1] + wall_width + wall["n"] * wall_width * 2
                     wall_rect = pygame.Rect(x, y, wall_height, wall_width)
                     pygame.draw.rect(screen, color, wall_rect)
                 walls_rects.append((wall, wall_rect))
