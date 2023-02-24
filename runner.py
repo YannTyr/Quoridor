@@ -219,8 +219,7 @@ def main():
 
         if active_player == 2:
             if game_is_active:
-                item, orientation, i, j = ai.move(game.board, game.pawns_loc, active_player)
-                # ai.map_dist(game.board, active_player)
+                item, orientation, i, j = ai.move(game.board, game.pawns_loc, game.walls, active_player)
                 if item == "pawn":
                     game.board[i][j]["player"] = active_player
                     game.board[game.pawns_loc[active_player][0]][game.pawns_loc[active_player][1]]["player"] = 0
@@ -245,13 +244,10 @@ def main():
                             active_wall["placed"] = True
                             active_wall["active"] = False
                             active_wall = None
-                            pawn_is_active = False
-                            highlight_pawn = False
+                            # pawn_is_active = False
+                            # highlight_pawn = False
                             turn_is_done = True
-                            print("ai moved with wall")
                             break
-                # print(game.pawns_loc)
-                # print(game.board[i][j])
 
         for event in events:
 
@@ -306,9 +302,7 @@ def main():
                                         "loc": (i, j),
                                         "orientation": orientation
                                     }
-                                    # print(virt_wall.values())
-                                    # print([w.values() for w in game.available_walls(game.board, active_player)], sep="\n")
-                                    if virt_wall in game.available_walls(game.board, active_player):
+                                    if virt_wall in game.available_walls(game.board, game.pawns_loc, active_player):
                                         if orientation == "horizontal":
                                             # active_wall["orientation"] = "horizontal"
                                             game.board[i][j]["wall_origin"] = True

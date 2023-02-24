@@ -183,41 +183,42 @@ class Quoridor:
                 if new_cell not in frontier and new_cell not in explored:
                     frontier.append(new_cell)
 
-    def available_walls(self, board, player):
+    def available_walls(self, board, loc, player):
         """Return a list with cells where walls can be placed or None there are no unused walls."""
         available_walls = []
 
-        if not all(wall["placed"] for wall in self.walls[player]):
-            for i in range(self.height - 1):
-                for j in range(self.width - 1):
-                    is_barriers = {
-                        "common": board[i][j]["wall_origin"],
-                        "horizontal": board[i][j]["wall_down"] or board[i][j + 1]["wall_down"],
-                        "vertical": board[i][j]["wall_right"] or board[i + 1][j]["wall_right"]
-                    }
-                    # print(i, j, is_barriers)
-                    for orientation in ["horizontal", "vertical"]:
-                        if not (is_barriers["common"] or is_barriers[orientation]):
-                            virt_board = copy.deepcopy(board)
-                            virt_board[i][j]["wall_origin"] = True
-                            virt_board[i][j]["orientation"] = orientation
-                            if orientation == "horizontal":
-                                virt_board[i][j]["wall_down"] = True
-                                virt_board[i][j + 1]["wall_down"] = True
-                            else:
-                                virt_board[i][j]["wall_right"] = True
-                                virt_board[i + 1][j]["wall_right"] = True
+        # if not all(wall["placed"] for wall in self.walls[player]):
+        for i in range(self.height - 1):
+            for j in range(self.width - 1):
+                is_barriers = {
+                    "common": board[i][j]["wall_origin"],
+                    "horizontal": board[i][j]["wall_down"] or board[i][j + 1]["wall_down"],
+                    "vertical": board[i][j]["wall_right"] or board[i + 1][j]["wall_right"]
+                }
+                # print(i, j, is_barriers)
+                for orientation in ["horizontal", "vertical"]:
+                    if not (is_barriers["common"] or is_barriers[orientation]):
+                        virt_board = copy.deepcopy(board)
+                        virt_board[i][j]["wall_origin"] = True
+                        virt_board[i][j]["orientation"] = orientation
+                        if orientation == "horizontal":
+                            virt_board[i][j]["wall_down"] = True
+                            virt_board[i][j + 1]["wall_down"] = True
+                        else:
+                            virt_board[i][j]["wall_right"] = True
+                            virt_board[i + 1][j]["wall_right"] = True
 
-                            if self.path_finder(virt_board, 1, self.pawns_loc) \
-                                    and self.path_finder(virt_board, 2, self.pawns_loc):
-                                wall = {
-                                    "loc": (i, j),
-                                    "orientation": orientation
-                                }
-                                available_walls.append(wall)
-            print(*available_walls, sep="\n")
-            return available_walls
-        else:
-            return None
+                        if self.path_finder(virt_board, 1, loc) \
+                                and self.path_finder(virt_board, 2, loc):
+                            wall = {
+                                "loc": (i, j),
+                                "orientation": orientation
+                            }
+                            available_walls.append(wall)
+        # print(*available_walls, sep="\n")
+        return available_walls
+        # else:
+        #     print("all walls placed")
+        #     return None
 
 

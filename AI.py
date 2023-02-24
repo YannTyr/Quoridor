@@ -16,7 +16,7 @@ class TestAI:
     #     self.distances = [[0 for _ in range(game.WIDTH)] for _ in range(game.HEIGHT)]
     #     print(self.distances)
 
-    def move(self, board, pawns_loc, player):
+    def move(self, board, pawns_loc, walls, player):
         """Return object to be moved and its coordinates."""
         from runner import game
         item = "pawn"
@@ -75,8 +75,9 @@ class PrimitiveAI(TestAI):
     with respect to opponent's shortest distance.
     Can use walls.
     """
-    def move(self, board, pawns_loc, player):
+    def move(self, board, pawns_loc, walls, player):
         """Return object to be moved and its coordinates."""
+        print(*board, sep="\n")
         from runner import game
         if player == 1:
             opponent = 2
@@ -84,43 +85,42 @@ class PrimitiveAI(TestAI):
             opponent = 1
         self_i, self_j = pawns_loc[player]
         oppo_i, oppo_j = pawns_loc[opponent]
-
-        # item = "pawn"
-        item = "wall"
+        rated_moves = []
         available_moves = game.available_moves(board, pawns_loc[player])
-        available_walls = game.available_walls(board, player)
         self_distances = self.map_dist(board, player)
         oppo_distances = self.map_dist(board, opponent)
 
-        rated_moves = []
-
         available_moves.sort(key=lambda cell: self_distances[cell[0]][cell[1]])
         i, j = available_moves[0]
-        distance = self_distances[i][j] - oppo_distances[oppo_i][oppo_j]
-        best_pawn_move = ("pawn", (i, j), None, distance)
+        delta = self_distances[i][j] - oppo_distances[oppo_i][oppo_j]
+        best_pawn_move = ("pawn", (i, j), None, delta)
         rated_moves.append(best_pawn_move)
 
-        for wall in available_walls:
-            i, j = wall["loc"]
-            orientation = wall["orientation"]
-            state = copy.deepcopy(board)
-            state[i][j]["wall_origin"] = True
-            state[i][j]["orientation"] = orientation
-            if orientation == "horizontal":
-                state[i][j]["wall_down"] = True
-                state[i][j + 1]["wall_down"] = True
-            else:
-                state[i][j]["wall_right"] = True
-                state[i + 1][j]["wall_right"] = True
-            self_dist = self.map_dist(state, player)
-            opp_dist = self.map_dist(state, opponent)
-            delta = self_dist[self_i][self_j] - opp_dist[oppo_i][oppo_j]
-            rated_moves.append(("wall", (i, j), orientation, delta))
+        if not all(wall["placed"] for wall in walls[player]):
+            available_walls = game.available_walls(board, pawns_loc, player)
+            for wall in available_walls:
+                i, j = wall["loc"]
+                orientation = wall["orientation"]
+                state = copy.deepcopy(board)
+                state[i][j]["wall_origin"] = True
+                state[i][j]["orientation"] = orientation
+                if orientation == "horizontal":
+                    state[i][j]["wall_down"] = True
+                    state[i][j + 1]["wall_down"] = True
+                else:
+                    state[i][j]["wall_right"] = True
+                    state[i + 1][j]["wall_right"] = True
+                self_dist = self.map_dist(state, player)
+                opp_dist = self.map_dist(state, opponent)
+                delta = self_dist[self_i][self_j] - opp_dist[oppo_i][oppo_j]
+                rated_moves.append(("wall", (i, j), orientation, delta))
 
         # rated_moves.sort(key=lambda item_loc_rate: item_loc_rate[2])
-        best_move = sorted(rated_moves, key=lambda item_loc_rate: item_loc_rate[-1])
-        item = best_move[0][0]
-        i, j = best_move[0][1]
-        orientation = best_move[0][2]
+        best_move = sorted(rated_moves, key=lambda item_loc_rate: item_loc_rate[-1])[0]
+        item = best_move[0]
+        i, j = best_move[1]
+        orientation = best_move[2]
+
+        print(*self.map_dist(board, player), sep="\n", end="\n")
 
         return item, orientation, i, j
