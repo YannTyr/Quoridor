@@ -365,12 +365,17 @@ def main():
 
                 # if event.type == pygame.MOUSEBUTTONUP:
 
+        # Activate a pawn if player has no walls
+        if all(wall["placed"] for wall in game.walls[active_player]):
+            pawn_is_active = True
+            highlight_pawn = True
+
+        # End of the turn
         if turn_is_done:
             turn += 1
             pawn_is_active = False
             highlight_pawn = False
             active_wall = None
-
 
         # Draw activated pawn
         if highlight_pawn:
