@@ -366,7 +366,7 @@ def main():
                 # if event.type == pygame.MOUSEBUTTONUP:
 
         # Activate a pawn if player has no walls
-        if all(wall["placed"] for wall in game.walls[active_player]):
+        if game_is_active and all(wall["placed"] for wall in game.walls[active_player]):
             pawn_is_active = True
             highlight_pawn = True
 
