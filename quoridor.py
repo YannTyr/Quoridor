@@ -90,8 +90,6 @@ class Quoridor:
     def available_moves(self, board, loc, ai=False):
         """Return a list with cells where a pawn can move."""
         available_moves = []
-        # pawn_i = loc[player][0]
-        # pawn_j = loc[player][1]
         pawn_i = loc[0]
         pawn_j = loc[1]
 
@@ -136,8 +134,6 @@ class Quoridor:
                                         if board[i][new_j]["player"] == 0:
                                             if not self.is_barrier(board, (i, j), (i, new_j)):
                                                 available_moves.append((i, new_j))
-
-        # print("available_moves: ", available_moves)
         return available_moves
 
     def is_barrier(self, board, loc_a, loc_b):
@@ -162,19 +158,15 @@ class Quoridor:
     def path_finder(self, virt_board, player, pawns_loc):
         """Return True if path to other side of the board is clear (and victory is available)."""
         frontier = [cell for cell in self.available_moves(virt_board, pawns_loc[player])]
-        # print("frontier", frontier)
         explored = set()
         while True:
-            # print("frontier: ", frontier)
             if not frontier:
-                # print("path is NOT clear")
                 return False
 
             cell = frontier[-1]
             pawn_loc = {player: cell}
 
             if self.won(player, pawn_loc):
-                # print("path is clear")
                 return True
 
             explored.add(cell)
@@ -217,8 +209,3 @@ class Quoridor:
                             available_walls.append(wall)
         # print(*available_walls, sep="\n")
         return available_walls
-        # else:
-        #     print("all walls placed")
-        #     return None
-
-

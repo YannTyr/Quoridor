@@ -28,6 +28,7 @@ COLOR_BORDERS = (50, 50, 50)
 COLOR_WALLS = (200, 200, 200)
 COLOR_WALLS_A = (175, 5, 5)
 COLOR_TEXT = (240, 240, 240)
+COLOR_TEXT_2 = (100, 100, 100)
 COLOR_PLAYERS = {
     "1": (205, 195, 120),
     "1a": (230, 220, 10),
@@ -43,7 +44,6 @@ players_names = {
 
 # Create game and AI agent
 game = Quoridor(height=HEIGHT, width=WIDTH, walls_number=WALLS_NUMBER)
-# ai = AI.TestAI()
 ai = AI.PrimitiveAI()
 
 
@@ -81,14 +81,14 @@ def main():
     wall_height = cell_size * 10/6
 
     storage_width = cell_size * 2
-    storage_height = board_height / 2
+    # storage_height = board_height / 2
     storage_height = WALLS_NUMBER * wall_width * 2 + wall_width
     # storage_origin_1 = (board_origin[0] - storage_width - 50, board_origin[1] + cell_size * HEIGHT * 0.5 - cell_size/8)
     storage_origin_1 = (board_origin[0] - storage_width - 50, (board_origin[1] + board_height) - storage_height - cell_size/6)
     storage_origin_2 = (board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/6)
 
     # Show instructions initially
-    instructions = True
+    show_instructions = True
 
     # Counter of turns
     turn = 0
@@ -104,13 +104,13 @@ def main():
         screen.fill(COLOR_BACKGROUND)
 
         # Show game instructions
-        if instructions:
+        if show_instructions:
             # Check if game quit
             for event in events:
                 if event.type == pygame.QUIT:
                     sys.exit()
             # Show instruction
-            instructions = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size, border_width)
+            show_instructions, ai_on = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size, border_width)
             continue  # Continue the loop
 
         if game_is_active:
@@ -226,7 +226,8 @@ def main():
         #
         # move = None
 
-        if active_player == 2:
+        if ai_on and active_player == 2:
+        # if active_player:
             if game_is_active:
                 item, orientation, i, j = ai.move(game.board, game.pawns_loc, game.walls, active_player)
                 if item == "pawn":
@@ -267,7 +268,7 @@ def main():
                     print("event.pos: ", event.pos)
 
                     if game_is_active:
-                        if active_player == 1:
+                        if not ai_on or active_player == 1:
 
                             # Check if the click was on a wall
                             for wall in walls_rects:
@@ -445,30 +446,69 @@ def draw_instructions(clock, screen, width, height, title_font, subtitle_font, i
         line_rect.center = ((width / 2), height / 4 + font_size * 3.5 * i)
         screen.blit(line, line_rect)
 
-    # Play game button
+    # Play_with_friend game button
     #                         left,            top,              width,     height
     # button_rect = pygame.Rect((3 / 8) * width, (3 / 4) * height, width / 4, height / 10)
-    button_rect = pygame.Rect((3 / 8) * width, height / 2, width / 4, width / 4)
-    button_border_rect = pygame.Rect((3 / 8) * width - border_width, height / 2 - border_width,
-                                     width / 4 + 2 * border_width, width / 4 + 2 * border_width)
+    button_rect_0 = pygame.Rect((1 / 8) * width + 50, height / 2 + 50, width / 4 - 50, width / 4 - 50)
+    button_border_rect_0 = pygame.Rect((1 / 8) * width - border_width + 50, height / 2 - border_width + 50,
+                                     width / 4 + 2 * border_width - 50, width / 4 + 2 * border_width - 50)
     button_text = subtitle_font.render("Play", True, COLOR_TEXT)
+    button_text_bottom = instruction_font.render("with friend", True, COLOR_TEXT_2)
     button_text_rect = button_text.get_rect()
-    button_text_rect.center = button_rect.center
-    pygame.draw.rect(screen, COLOR_BORDERS, button_border_rect)
-    pygame.draw.rect(screen, COLOR_SQUARES, button_rect)
+    button_text_bottom_rect = button_text_bottom.get_rect()
+    button_text_rect.center = button_rect_0.center
+    button_text_bottom_rect.midtop = button_text_rect.midbottom
+    pygame.draw.rect(screen, COLOR_BORDERS, button_border_rect_0)
+    pygame.draw.rect(screen, COLOR_SQUARES, button_rect_0)
     screen.blit(button_text, button_text_rect)
+    screen.blit(button_text_bottom, button_text_bottom_rect)
 
-    # Check if play button clicked
+    # Play_with_weak_AI game button
+    button_rect_1 = pygame.Rect((3 / 8) * width + 50, height / 2 + 50, width / 4 - 50, width / 4 - 50)
+    button_border_rect_1 = pygame.Rect((3 / 8) * width - border_width + 50, height / 2 - border_width + 50,
+                                     width / 4 + 2 * border_width - 50, width / 4 + 2 * border_width - 50)
+    button_text = subtitle_font.render("Play", True, COLOR_TEXT)
+    button_text_bottom = instruction_font.render("with weak AI", True, COLOR_TEXT_2)
+    button_text_rect = button_text.get_rect()
+    button_text_bottom_rect = button_text_bottom.get_rect()
+    button_text_rect.center = button_rect_1.center
+    button_text_bottom_rect.midtop = button_text_rect.midbottom
+    pygame.draw.rect(screen, COLOR_BORDERS, button_border_rect_1)
+    pygame.draw.rect(screen, COLOR_SQUARES, button_rect_1)
+    screen.blit(button_text, button_text_rect)
+    screen.blit(button_text_bottom, button_text_bottom_rect)
+
+    # Play_with_strong_AI game button
+    button_rect_2 = pygame.Rect((5 / 8) * width + 50, height / 2 + 50, width / 4 - 50, width / 4 - 50)
+    button_border_rect_2 = pygame.Rect((5 / 8) * width - border_width + 50, height / 2 - border_width + 50,
+                                     width / 4 + 2 * border_width - 50, width / 4 + 2 * border_width - 50)
+    button_text = subtitle_font.render("Play", True, COLOR_TEXT_2)
+    button_text_bottom = instruction_font.render("with strong AI", True, COLOR_TEXT_2)
+    button_text_rect = button_text.get_rect()
+    button_text_bottom_rect = button_text_bottom.get_rect()
+    button_text_rect.center = button_rect_2.center
+    button_text_bottom_rect.midtop = button_text_rect.midbottom
+    pygame.draw.rect(screen, COLOR_BORDERS, button_border_rect_2)
+    pygame.draw.rect(screen, COLOR_SQUARES, button_rect_2)
+    screen.blit(button_text, button_text_rect)
+    screen.blit(button_text_bottom, button_text_bottom_rect)
+
+    # Check if play buttons clicked
     click, _, _ = pygame.mouse.get_pressed()
     if click == 1:
         mouse = pygame.mouse.get_pos()
-        if button_rect.collidepoint(mouse):
+        if button_rect_0.collidepoint(mouse):
             time.sleep(0.3)
-            return False
+            # ai_on = False
+            return False, False
+        elif button_rect_1.collidepoint(mouse):
+            time.sleep(0.3)
+            # ai_on = True
+            return False, True
 
     pygame.display.flip()
     clock.tick(30)
-    return True
+    return True, None
 
 
 if __name__ == '__main__':
