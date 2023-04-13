@@ -197,11 +197,11 @@ def main():
                     pygame.draw.rect(screen, color, wall_rect)
 
                 else:
-                    # Highlight a wall when placing it on the board
+                    # Highlighting place where a wall can be placed
                     if wall["active"]:
                         x, y = pygame.mouse.get_pos()
-                        if board_origin[0] <= x <= board_origin[0] + board_width \
-                                and board_origin[1] <= y <= board_origin[1] + board_height:
+                        if board_origin[0] + 1/6 * cell_size <= x <= board_origin[0] + board_width \
+                                and board_origin[1] + 1/6 * cell_size <= y <= board_origin[1] + board_height:
                             cell_y = (y - board_origin[1] - 1 / 6 * cell_size) % cell_size
                             cell_x = (x - board_origin[0] - 1 / 6 * cell_size) % cell_size
                             if cell_y <= cell_size * 4 / 6 <= cell_x:
@@ -275,6 +275,7 @@ def main():
 
         if ai_on and active_player == 2:
         # if active_player:
+        # if True:
             if game_is_active:
                 item, orientation, i, j = ai.move(game.board, game.pawns_loc, game.walls, active_player)
                 if item == "pawn":
@@ -476,7 +477,7 @@ def main():
             game_is_active = False
 
         pygame.display.flip()
-        clock.tick(24)
+        clock.tick(10)
 
 
 # def draw_pawn():
