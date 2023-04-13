@@ -38,8 +38,7 @@ COLOR_PLAYERS = {
 
 players_names = {
     1: "Theseus",
-    2: "Zombie"
-    # 2: "Minotaur
+    2: "Minotaur"
 }
 
 # Create game and AI agent
@@ -290,6 +289,7 @@ def main():
                             repeat_reset = False
                             game = Quoridor(height=HEIGHT, width=WIDTH, walls_number=WALLS_NUMBER)
                             ai = AI.PrimitiveAI()
+                            game_is_active = True
                         else:
                             repeat_reset = True
                     else:
