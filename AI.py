@@ -93,6 +93,7 @@ class PrimitiveAI(TestAI):
         available_moves.sort(key=lambda cell: self_distances[cell[0]][cell[1]])
         i, j = available_moves[0]
         delta = self_distances[i][j] - oppo_distances[oppo_i][oppo_j]
+        min_delta = delta
         best_pawn_move = ("pawn", (i, j), None, delta)
         rated_moves.append(best_pawn_move)
 
@@ -114,9 +115,15 @@ class PrimitiveAI(TestAI):
                 opp_dist = self.map_dist(state, opponent)
                 delta = self_dist[self_i][self_j] - opp_dist[oppo_i][oppo_j]
                 rated_moves.append(("wall", (i, j), orientation, delta))
+                if delta < min_delta:
+                    min_delta = delta
 
-        # rated_moves.sort(key=lambda item_loc_rate: item_loc_rate[2])
-        best_move = sorted(rated_moves, key=lambda item_loc_rate: item_loc_rate[-1])[0]
+        # rated_moves.sort(key=lambda item_loc_rate: item_loc_rate[-1])
+        print(rated_moves)
+        print(min_delta)
+        best_moves = [move for move in rated_moves if move[-1] == min_delta]
+        best_move = random.choice(best_moves)
+        # best_move = sorted(rated_moves, key=lambda item_loc_rate: item_loc_rate[-1])[0]
         item = best_move[0]
         i, j = best_move[1]
         orientation = best_move[2]
