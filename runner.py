@@ -292,6 +292,8 @@ def main():
                             ai = AI.PrimitiveAI()
                         else:
                             repeat_reset = True
+                    else:
+                        repeat_reset = False
 
                     if game_is_active:
                         if not ai_on or active_player == 1:
