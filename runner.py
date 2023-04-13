@@ -196,8 +196,40 @@ def main():
                         wall_rect = pygame.Rect(x, y, wall_width, wall_height)
                     pygame.draw.rect(screen, color, wall_rect)
 
-                # Draw a wall if it is unused yet (laying on a "wall storage")
                 else:
+                    # Highlight a wall when placing it on the board
+                    if wall["active"]:
+                        x, y = pygame.mouse.get_pos()
+                        if board_origin[0] <= x <= board_origin[0] + board_width \
+                                and board_origin[1] <= y <= board_origin[1] + board_height:
+                            cell_y = (y - board_origin[1] - 1 / 6 * cell_size) % cell_size
+                            cell_x = (x - board_origin[0] - 1 / 6 * cell_size) % cell_size
+                            if cell_y <= cell_size * 4 / 6 <= cell_x:
+                                orientation = "vertical"
+                            elif cell_y >= cell_size * 4 / 6 >= cell_x:
+                                orientation = "horizontal"
+                            else:
+                                orientation = None
+                            if orientation is not None:
+                                i = int((y - board_origin[1] - 1 / 6 * cell_size) // cell_size)
+                                j = int((x - board_origin[0] - 1 / 6 * cell_size) // cell_size)
+                                if i == HEIGHT - 1:
+                                    i -= 1
+                                if j == WIDTH - 1:
+                                    j -= 1
+
+                                color = GRAY
+                                if orientation == "horizontal":
+                                    x = board_origin[0] + j * cell_size + cell_size * 1 / 6
+                                    y = board_origin[1] + i * cell_size + cell_size * 5 / 6 + 1 / 30 * cell_size
+                                    wall_rect = pygame.Rect(x, y, wall_height, wall_width)
+                                else:
+                                    x = board_origin[0] + j * cell_size + cell_size * 5 / 6 + 1 / 30 * cell_size
+                                    y = board_origin[1] + i * cell_size + cell_size * 1 / 6
+                                    wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                                pygame.draw.rect(screen, color, wall_rect)
+
+                    # Draw a wall if it is unused yet (laying on a "wall storage")
                     if not wall["active"]:
                         color = COLOR_PLAYERS[str(player)]
                     else:
