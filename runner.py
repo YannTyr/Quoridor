@@ -50,6 +50,8 @@ ai = AI.PrimitiveAI()
 def main():
 
     # Create game
+    global game
+    global ai
     pygame.init()
     size = width, height = 1200, 700
     # size = width, height = 1920, 1080
@@ -97,6 +99,7 @@ def main():
     highlight_pawn = False
     active_wall = None
     game_is_active = True
+    repeat_reset = False
 
     while True:
 
@@ -216,14 +219,27 @@ def main():
                 # maybe better version (not ready yet):
                 # wall["rect"] = wall_rect
 
+        # Draw Reset button
+        reset_width = width // 10
+        reset_height = height // 20
+        reset_button_rect = pygame.Rect(width - reset_width - reset_height, height - 2 * reset_height,
+                                        reset_width, reset_height)
+        reset_button_border_rect = pygame.Rect(width - reset_width - reset_height - border_width,
+                                               height - 2 * reset_height - border_width,
+                                               reset_width + 2 * border_width, reset_height + 2 * border_width)
+        reset_button_text = instruction_font.render("Reset", True, COLOR_TEXT_2)
+        reset_button_text_rect = reset_button_text.get_rect()
+        reset_button_text_rect.center = reset_button_rect.center
+        pygame.draw.rect(screen, COLOR_BORDERS, reset_button_border_rect)
+        pygame.draw.rect(screen, COLOR_SQUARES, reset_button_rect)
+        screen.blit(reset_button_text, reset_button_text_rect)
 
+        # Draw active Reset? button
+        if repeat_reset:
+            pygame.draw.rect(screen, RED, reset_button_rect)
+            reset_button_text = instruction_font.render("Reset?", True, COLOR_TEXT)
+            screen.blit(reset_button_text, reset_button_text_rect)
 
-        # # AI Move button?
-        # pass
-        #
-        # # Reset button
-        # pass
-        #
         # move = None
 
         if ai_on and active_player == 2:
@@ -266,6 +282,16 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     print("event.pos: ", event.pos)
+
+                    # Check if Reset is pressed
+                    if reset_button_rect.collidepoint(event.pos):
+                        if repeat_reset:
+                            print("reset")
+                            repeat_reset = False
+                            game = Quoridor(height=HEIGHT, width=WIDTH, walls_number=WALLS_NUMBER)
+                            ai = AI.PrimitiveAI()
+                        else:
+                            repeat_reset = True
 
                     if game_is_active:
                         if not ai_on or active_player == 1:
