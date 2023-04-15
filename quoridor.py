@@ -87,7 +87,7 @@ class Quoridor:
             return True
         return False
 
-    def available_moves(self, board, loc, ai=False):
+    def available_moves(self, board, loc, planning=False):
         """Return a list with cells where a pawn can move."""
         available_moves = []
         pawn_i = loc[0]
@@ -103,7 +103,7 @@ class Quoridor:
             if 0 <= i < self.height and 0 <= j < self.width:
 
                 # Add main moves
-                if board[i][j]["player"] == 0 or ai is True:
+                if board[i][j]["player"] == 0 or planning is True:
                     if not self.is_barrier(board, (pawn_i, pawn_j), (i, j)):
                         available_moves.append((i, j))
 
@@ -171,7 +171,7 @@ class Quoridor:
 
             explored.add(cell)
             frontier = frontier[:-1]
-            for new_cell in self.available_moves(virt_board, pawn_loc[player]):
+            for new_cell in self.available_moves(virt_board, pawn_loc[player], planning=True):
                 if new_cell not in frontier and new_cell not in explored:
                     frontier.append(new_cell)
 

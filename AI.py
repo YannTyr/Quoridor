@@ -54,7 +54,7 @@ class TestAI:
             for cell in frontier.copy():
                 i, j = cell[0], cell[1]
                 dist = distances[i][j]
-                for new_cell in game.available_moves(board, cell, ai=True):
+                for new_cell in game.available_moves(board, cell, planning=True):
                     if new_cell not in frontier and new_cell not in explored:
                         i, j = new_cell[0], new_cell[1]
                         distances[i][j] = dist + 1
