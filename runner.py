@@ -73,7 +73,7 @@ def main():
     cell_size = int(min(board_width_abt / WIDTH, board_height_abt / HEIGHT))
     border_width = cell_size / 30
     board_height = cell_size * HEIGHT
-    board_width = board_height
+    board_width = cell_size * WIDTH
     board_origin = ((width / 2 - board_width / 2), (height / 2 - board_height / 2))
 
     pawn_size = cell_size / 2.1
@@ -120,6 +120,11 @@ def main():
         turn_is_done = False
 
         # Draw the board
+        # board = pygame.Rect(
+        #     board_origin[0] - 2,
+        #     board_origin[1] - 2,
+        #     board_width + 4, board_height + 4)
+        # pygame.draw.rect(screen, DARK_GRAY, board)
         cells = []
         for i in range(HEIGHT):
             row = []
@@ -218,16 +223,22 @@ def main():
                                 if j == WIDTH - 1:
                                     j -= 1
 
-                                color = GRAY
-                                if orientation == "horizontal":
-                                    x = board_origin[0] + j * cell_size + cell_size * 1 / 6
-                                    y = board_origin[1] + i * cell_size + cell_size * 5 / 6 + 1 / 30 * cell_size
-                                    wall_rect = pygame.Rect(x, y, wall_height, wall_width)
-                                else:
-                                    x = board_origin[0] + j * cell_size + cell_size * 5 / 6 + 1 / 30 * cell_size
-                                    y = board_origin[1] + i * cell_size + cell_size * 1 / 6
-                                    wall_rect = pygame.Rect(x, y, wall_width, wall_height)
-                                pygame.draw.rect(screen, color, wall_rect)
+                                shadow_wall = {
+                                    "loc": (i, j),
+                                    "orientation": orientation
+                                }
+                                if shadow_wall in available_walls:
+
+                                    color = GRAY
+                                    if orientation == "horizontal":
+                                        x = board_origin[0] + j * cell_size + cell_size * 1 / 6
+                                        y = board_origin[1] + i * cell_size + cell_size * 5 / 6 + 1 / 30 * cell_size
+                                        wall_rect = pygame.Rect(x, y, wall_height, wall_width)
+                                    else:
+                                        x = board_origin[0] + j * cell_size + cell_size * 5 / 6 + 1 / 30 * cell_size
+                                        y = board_origin[1] + i * cell_size + cell_size * 1 / 6
+                                        wall_rect = pygame.Rect(x, y, wall_width, wall_height)
+                                    pygame.draw.rect(screen, color, wall_rect)
 
                     # Draw a wall if it is unused yet (laying on a "wall storage")
                     if not wall["active"]:
@@ -332,6 +343,7 @@ def main():
                         if not ai_on or active_player == 1:
 
                             # Check if the click was on a wall
+                            available_walls = game.available_walls(game.board, game.pawns_loc, active_player)
                             for wall in walls_rects:
                                 if wall[1].collidepoint(event.pos):
                                     double_click = False
@@ -373,7 +385,7 @@ def main():
                                         "loc": (i, j),
                                         "orientation": orientation
                                     }
-                                    if virt_wall in game.available_walls(game.board, game.pawns_loc, active_player):
+                                    if virt_wall in available_walls:
                                         if orientation == "horizontal":
                                             # active_wall["orientation"] = "horizontal"
                                             game.board[i][j]["wall_origin"] = True
@@ -477,7 +489,7 @@ def main():
             game_is_active = False
 
         pygame.display.flip()
-        clock.tick(10)
+        clock.tick(6)
 
 
 # def draw_pawn():
