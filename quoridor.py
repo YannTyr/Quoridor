@@ -88,7 +88,10 @@ class Quoridor:
         return False
 
     def available_moves(self, board, loc, planning=False):
-        """Return a list with cells where a pawn can move."""
+        """
+        Return a list with cells where a pawn can move.
+        When planning=True a cells with pawns counts as empty (available for moving).
+        """
         available_moves = []
         pawn_i = loc[0]
         pawn_j = loc[1]
