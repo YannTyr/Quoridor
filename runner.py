@@ -3,6 +3,7 @@ import sys
 import time
 import copy
 import random
+import os
 
 from quoridor import Quoridor
 import AI
@@ -52,6 +53,9 @@ def main():
     global game
     global ai
     pygame.init()
+    pygame.display.set_caption("Quoridor")
+    icon = pygame.image.load(os.path.join("assets", "images", "Quoridor icon 0.png"))
+    pygame.display.set_icon(icon)
     size = width, height = 1200, 700
     # size = width, height = 1920, 1080
     # size = width, height = 1366, 768
@@ -59,7 +63,7 @@ def main():
     clock = pygame.time.Clock()
 
     # Fonts
-    SERIF = "assets/fonts/EBGaramond-VariableFont_wght.ttf"
+    SERIF = os.path.join("assets", "fonts", "EBGaramond-VariableFont_wght.ttf")
     font_size = 10
     if width >= 1920: font_size = int(font_size * 1.5)
     title_font = pygame.font.Font(SERIF, font_size * 8)
@@ -489,7 +493,7 @@ def main():
             game_is_active = False
 
         pygame.display.flip()
-        clock.tick(6)
+        clock.tick(4)
 
 
 # def draw_pawn():
