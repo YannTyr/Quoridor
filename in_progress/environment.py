@@ -7,7 +7,6 @@ from gymnasium.spaces import Discrete, MultiDiscrete, Tuple
 from gymnasium import spaces
 import pettingzoo
 from pettingzoo.utils import agent_selector, wrappers
-from quoridor import Quoridor
 NUM_ITERS = 1000
 
 
@@ -41,7 +40,6 @@ class QuoridorEnv(pettingzoo.AECEnv):
         )
         self.width, self.height = board_size
         self.walls_number = walls
-        self.game = Quoridor(height=self.height, width=self.width, walls_number=walls)
 
         self.actions_number = 16 + (self.width - 1) * (self.height - 1) * 2
         self._action_spaces = {agent: Discrete(self.actions_number) for agent in self.possible_agents}
