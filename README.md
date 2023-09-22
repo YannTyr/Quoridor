@@ -1,3 +1,3 @@
 # Quoridor
 
-Implementation of Quoridor board game with AI (in progress)
+Implementation of Quoridor board game with primitive AI
