@@ -92,7 +92,7 @@ def main():
     storage_origin_1 = (board_origin[0] - storage_width - 50, (board_origin[1] + board_height) - storage_height - cell_size/6)
     storage_origin_2 = (board_origin[0] + cell_size * WIDTH + 50, board_origin[1] + cell_size/6)
 
-    # Show instructions initially
+    # Show instructions (menu) initially
     show_instructions = True
 
     # Counter of turns
@@ -116,7 +116,7 @@ def main():
                 if event.type == pygame.QUIT:
                     sys.exit()
             # Show instruction
-            show_instructions, ai_on = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size, border_width)
+            show_instructions, is_player_ai = draw_instructions(clock, screen, width, height, title_font, subtitle_font, instruction_font, font_size, border_width)
             continue  # Continue the loop
 
         if game_is_active:
@@ -280,7 +280,7 @@ def main():
         pygame.draw.rect(screen, COLOR_SQUARES, reset_button_rect)
         screen.blit(reset_button_text, reset_button_text_rect)
 
-        # Draw active Reset? button
+        # Draw active 'Reset?' button
         if repeat_reset:
             pygame.draw.rect(screen, RED, reset_button_rect)
             reset_button_text = instruction_font.render("Reset?", True, COLOR_TEXT)
@@ -288,7 +288,7 @@ def main():
 
         # move = None
 
-        if ai_on and active_player == 2:
+        if is_player_ai[active_player]:
         # if active_player:
         # if True:
             if game_is_active:
@@ -328,15 +328,16 @@ def main():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    print("event.pos: ", event.pos)
+                    # print("event.pos: ", event.pos)
 
                     # Check if Reset is pressed
                     if reset_button_rect.collidepoint(event.pos):
                         if repeat_reset:
-                            print("reset")
+                            # print("reset")
                             repeat_reset = False
                             game = Quoridor(height=HEIGHT, width=WIDTH, walls_number=WALLS_NUMBER)
                             ai = AI.PrimitiveAI()
+                            is_player_ai = {1: False, 2: False, random.randint(1, 2): True}
                             game_is_active = True
                         else:
                             repeat_reset = True
@@ -344,7 +345,7 @@ def main():
                         repeat_reset = False
 
                     if game_is_active:
-                        if not ai_on or active_player == 1:
+                        if not is_player_ai[active_player]:
 
                             # Check if the click was on a wall
                             available_walls = game.available_walls(game.board, game.pawns_loc, active_player)
@@ -417,7 +418,7 @@ def main():
                                 # Get a coordinates (i, j) of the clicked cell
                                 i = int((event.pos[1] - board_origin[1]) / cell_size)
                                 j = int((event.pos[0] - board_origin[0]) / cell_size)
-                                print(j, i)
+                                # print(j, i)
 
                                 # Activate pawn
                                 if game.board[i][j]["player"] == active_player:
@@ -540,12 +541,12 @@ def draw_instructions(clock, screen, width, height, title_font, subtitle_font, i
     screen.blit(button_text, button_text_rect)
     screen.blit(button_text_bottom, button_text_bottom_rect)
 
-    # Play_with_weak_AI game button
+    # Play_with_AI game button
     button_rect_1 = pygame.Rect((3 / 8) * width + 50, height / 2 + 50, width / 4 - 50, width / 4 - 50)
     button_border_rect_1 = pygame.Rect((3 / 8) * width - border_width + 50, height / 2 - border_width + 50,
                                      width / 4 + 2 * border_width - 50, width / 4 + 2 * border_width - 50)
     button_text = subtitle_font.render("Play", True, COLOR_TEXT)
-    button_text_bottom = instruction_font.render("with weak AI", True, COLOR_TEXT_2)
+    button_text_bottom = instruction_font.render("with AI", True, COLOR_TEXT_2)
     button_text_rect = button_text.get_rect()
     button_text_bottom_rect = button_text_bottom.get_rect()
     button_text_rect.center = button_rect_1.center
@@ -555,12 +556,12 @@ def draw_instructions(clock, screen, width, height, title_font, subtitle_font, i
     screen.blit(button_text, button_text_rect)
     screen.blit(button_text_bottom, button_text_bottom_rect)
 
-    # Play_with_strong_AI game button
+    # Play_AI game button
     button_rect_2 = pygame.Rect((5 / 8) * width + 50, height / 2 + 50, width / 4 - 50, width / 4 - 50)
     button_border_rect_2 = pygame.Rect((5 / 8) * width - border_width + 50, height / 2 - border_width + 50,
                                      width / 4 + 2 * border_width - 50, width / 4 + 2 * border_width - 50)
-    button_text = subtitle_font.render("Play", True, COLOR_TEXT_2)
-    button_text_bottom = instruction_font.render("with strong AI", True, COLOR_TEXT_2)
+    button_text = subtitle_font.render("Play", True, COLOR_TEXT)
+    button_text_bottom = instruction_font.render("AI vs AI", True, COLOR_TEXT_2)
     button_text_rect = button_text.get_rect()
     button_text_bottom_rect = button_text_bottom.get_rect()
     button_text_rect.center = button_rect_2.center
@@ -571,17 +572,24 @@ def draw_instructions(clock, screen, width, height, title_font, subtitle_font, i
     screen.blit(button_text_bottom, button_text_bottom_rect)
 
     # Check if play buttons clicked
+    is_ai = {
+        1: False,
+        2: False
+    }
     click, _, _ = pygame.mouse.get_pressed()
     if click == 1:
         mouse = pygame.mouse.get_pos()
         if button_rect_0.collidepoint(mouse):
             time.sleep(0.3)
-            # ai_on = False
-            return False, False
+            return False, is_ai
         elif button_rect_1.collidepoint(mouse):
+            is_ai[random.randint(1, 2)] = True
             time.sleep(0.3)
-            # ai_on = True
-            return False, True
+            return False, is_ai
+        elif button_rect_2.collidepoint(mouse):
+            is_ai[1] = is_ai[2] = True
+            time.sleep(0.3)
+            return False, is_ai
 
     pygame.display.flip()
     clock.tick(30)
