@@ -9,13 +9,6 @@ class TestAI:
     Can not use walls.
     """
 
-    # Init does not work(
-    # def __int__(self, width=9, height=9):
-    #     print("__int__")
-    #     from runner import game
-    #     self.distances = [[0 for _ in range(game.WIDTH)] for _ in range(game.HEIGHT)]
-    #     print(self.distances)
-
     def move(self, board, pawns_loc, walls, player):
         """Return object to be moved and its coordinates."""
         from runner import game
@@ -48,8 +41,6 @@ class TestAI:
         explored = []
         new_frontier = frontier
         while frontier:
-            # print("frontier: ", frontier)
-            # print("explored: ", explored)
             frontier = new_frontier
             for cell in frontier.copy():
                 i, j = cell[0], cell[1]
@@ -63,7 +54,6 @@ class TestAI:
                 frontier.remove(cell)
                 explored.append(cell)
                 new_frontier = frontier
-
         # print(*distances, sep="\n", end="\n")
         # print(type(distances[4][4]))
         return distances
@@ -77,7 +67,7 @@ class PrimitiveAI(TestAI):
     """
     def move(self, board, pawns_loc, walls, player):
         """Return object to be moved and its coordinates."""
-        print(*board, sep="\n")
+        # print(*board, sep="\n")
         from runner import game
         if player == 1:
             opponent = 2
@@ -118,16 +108,12 @@ class PrimitiveAI(TestAI):
                 if delta < min_delta:
                     min_delta = delta
 
-        # rated_moves.sort(key=lambda item_loc_rate: item_loc_rate[-1])
-        print(rated_moves)
-        print(min_delta)
+        # print('min_delta (self distance - opponent distance): ', min_delta)
         best_moves = [move for move in rated_moves if move[-1] == min_delta]
         best_move = random.choice(best_moves)
-        # best_move = sorted(rated_moves, key=lambda item_loc_rate: item_loc_rate[-1])[0]
         item = best_move[0]
         i, j = best_move[1]
         orientation = best_move[2]
 
-        print(*self.map_dist(board, player), sep="\n", end="\n")
-
+        # print(*self.map_dist(board, player), sep="\n", end="\n")
         return item, orientation, i, j
